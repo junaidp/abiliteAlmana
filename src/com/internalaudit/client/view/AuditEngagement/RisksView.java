@@ -97,24 +97,25 @@ public class RisksView extends Composite {
 	private Button approve = new Button("Approve");
 	private Button reject = new Button("FeedBack");
 	private AddImage addMore = new AddImage();
-	private Button btnLibrary = new Button("Library");
+	private Button btnLibrary = new Button("Library"); 
 	private VerticalLayoutContainer scrollExistingControlContainer = new VerticalLayoutContainer();
+    private String userPackage;
 
 	interface RisksViewUiBinder extends UiBinder<Widget, RisksView> {
 	}
 
 	public RisksView(final int auditEngId, final InternalAuditServiceAsync rpcService, Employee employee,
-			ArrayList<RiskObjective> listSavedRisks, VerticalPanel vpExistingControlContainer,
+			  String userPackage, ArrayList<RiskObjective> listSavedRisks, VerticalPanel vpExistingControlContainer,
 			final AsyncCallback<KickoffView> asyncCallback, int suggestedControlsList) {
 		initWidget(uiBinder.createAndBindUi(this));
 
 		this.rpcService = rpcService;
 		this.auditEngId = auditEngId;
 		this.loggedInEmployee = employee;
-		this.listRisks = listSavedRisks;
+		this.listRisks = listSavedRisks; 
+		this.userPackage = userPackage;
 		getRiskInfo(auditEngId, vpExistingControlContainer);
-
-		setHandlers(auditEngId, vpExistingControlContainer, suggestedControlsList, rpcService, asyncCallback);
+        setHandlers(auditEngId, vpExistingControlContainer, suggestedControlsList, rpcService, asyncCallback);
 		approvalButtonsPanel.getElement().getStyle().setMarginTop(40, Unit.PX);
 		initiationButtonsPanel.getElement().getStyle().setMarginTop(10, Unit.PX);
 		approvalButtonsPanel.getElement().getStyle().setMarginLeft(1010, Unit.PX);
@@ -123,8 +124,7 @@ public class RisksView extends Composite {
 		scrollExistingControlContainer.setHeight("400px");
 		scrollExistingControlContainer.add(vpExistingControlContainer);
 		scrollExistingControlContainer.setScrollMode(ScrollMode.AUTOY);
-		// approvalButtonsPanel.getElement().getStyle().setPaddingLeft(400,
-		// Unit.PX);
+		// approvalButtonsPanel.getElement().getStyle().setPaddingLeft(400, Unit.PX); 
 	}
 
 	private void setHandlers(final int auditEngId, final VerticalPanel vpExistingControlContainer, final int suggestedControlsList, final InternalAuditServiceAsync rpcService,
@@ -132,12 +132,10 @@ public class RisksView extends Composite {
 		initiationButtonsPanel.add(saveRisks);
 		initiationButtonsPanel.add(submit);
 		approvalButtonsPanel.add(approve);
-		approvalButtonsPanel.add(reject);
-		
+		approvalButtonsPanel.add(reject); 
 		addPanel.add(btnLibrary);
-		btnLibrary.setWidth("100px");
-		addMore.getElement().getStyle().setPaddingLeft(1050, Unit.PX);
-		addPanel.add(addMore);
+		btnLibrary.setWidth("100px"); 
+		addPanel.add(addMore); 
 		
 		addMore.addClickHandler(new ClickHandler() {
 
@@ -182,7 +180,10 @@ public class RisksView extends Composite {
 				if (riskRows.getWidgetCount() < 1) {
 					Window.alert("please add risks");
 				} else {
-					saveRisks(auditEngId, rpcService, records, InternalAuditConstants.SAVED, asyncCallback);
+					if(txtControlValidation())
+						saveRisks(auditEngId, rpcService, records, InternalAuditConstants.SAVED, asyncCallback);
+					else
+						Window.alert("Enter some text in 'Controls'");
 				}
 			}
 		});
@@ -195,10 +196,12 @@ public class RisksView extends Composite {
 				if (riskRows.getWidgetCount() < 1) {
 					Window.alert("please add risks");
 				} else {
+					if(txtControlValidation()) {
 					boolean confirmed = Window.confirm("Are you done with key Risks and Existing Controls ?");
-					if (confirmed) {
-						saveRisks(auditEngId, rpcService, records, InternalAuditConstants.SUBMIT, asyncCallback);
-					}
+					if (confirmed) 						
+							saveRisks(auditEngId, rpcService, records, InternalAuditConstants.SUBMIT, asyncCallback);
+					}	else
+							Window.alert("Enter some text in 'Controls'");
 				}
 			}
 		});
@@ -239,7 +242,24 @@ public class RisksView extends Composite {
 			}
 		});
 	}
+	
+	private void visibilityApproveFeedbackButtons(boolean flag) {
+		approve.setVisible(flag);
+		reject.setVisible(flag);		
+	} 
 
+	private boolean txtControlValidation() {
+		boolean flag = false;
+		for (int i = 0; i < riskRows.getWidgetCount(); i++) {
+			RiskRow current = ((RiskRow) (riskRows.getWidget(i)));
+			if(current.getExistingControlView().getTxtAreaControl().getText().length() > 0)
+				flag = true;
+			else
+				flag = false;
+		}
+		return flag;
+	}
+	
 	public void addRow(final RiskControlMatrixView controlView, RiskObjective riskObjective) {
 		final RiskRow riskRow = new RiskRow();
 		riskRows.add(riskRow);
@@ -460,14 +480,25 @@ public class RisksView extends Composite {
 
 			@Override
 			public void onSuccess(final ArrayList<RiskControlMatrixEntity> r) {
-
+				
 				riskRows.clear();
 				disableFields();
 				savedRisks = r;
 				for (int i = 0; i < r.size(); i++) {
 					final RiskRow current = new RiskRow();
-					if (r.get(i) != null && r.get(i).getRiskId() != 0) {
-						current.disableFields();
+//					if (r.get(i) != null && r.get(i).getRiskId() != 0) {
+//						current.disableFields();
+//					}
+					if(r.get(i).getStatus() >3) //submit and approve
+						current.removeRow();
+					if(loggedInEmployee.getEmployeeId() == r.get(i).getInitiatedBy().getEmployeeId() &&
+							r.get(i).getApprovedBy().getEmployeeId() == 0) {
+						visibilityApproveFeedbackButtons(false);
+						current.enableDataFields(false);
+					}
+					else {
+						visibilityApproveFeedbackButtons(true);
+						current.enableDataFields(true);
 					}
 					current.getRiskId().setText(String.valueOf(r.get(i).getRiskId()));
 
@@ -487,6 +518,7 @@ public class RisksView extends Composite {
 					if (r.get(i).getFeedback() != null && !r.get(i).getFeedback().isEmpty()) {
 						feedbackPanel.setVisible(true);
 						feedback.setText(r.get(i).getFeedback());
+						enableInitiationpanel();
 						showhideSaveSubmitButtons(true);//added by moqeet to enable save?submit buttons
 					}
 
@@ -509,9 +541,10 @@ public class RisksView extends Composite {
 					enableInitiationpanel();
 					enableFields();
 				} else {
-
+					showhideSaveSubmitButtons(true);
 					if (r.get(0).getApprovedBy() != null && r.get(0).getApprovedBy().getEmployeeId() != 0
 							&& r.get(0).getStatus() == InternalAuditConstants.APPROVED) {
+						disableRiskRows();
 						approvedBy.setVisible(true);
 						approvedBy.setText("Approved by:" + r.get(0).getApprovedBy().getEmployeeName());
 						seperator.setVisible(true);
@@ -532,13 +565,16 @@ public class RisksView extends Composite {
 						enableFields();
 						showhideSaveSubmitButtons(true);//added by moqeet to enable Save and Submit
 						enableRiskRows();
-					} else if (r.get(0).getStatus() == InternalAuditConstants.SUBMIT
-							&& r.get(0).getInitiatedBy().getReportingTo() != null
-							&& (r.get(0).getInitiatedBy().getReportingTo().getEmployeeId() == loggedInEmployee
-									.getEmployeeId() || loggedInEmployee.getRollId() == 1)) {
+					} else if (r.get((r.size()-1)).getStatus() == InternalAuditConstants.SUBMIT
+							&& r.get((r.size()-1)).getInitiatedBy().getReportingTo() != null
+							&& (r.get((r.size()-1)).getInitiatedBy().getReportingTo().getEmployeeId() == loggedInEmployee
+									.getEmployeeId() || loggedInEmployee.getRollId() == 3)) {
 						enableApprovalnpanel();
 						enableFields();
-						enableRiskRows();
+//						enableRiskRows(); //commented by Moqeet
+						if(r.get((r.size()-1)).getStatus() != InternalAuditConstants.REJECTED)
+							disableRiskRows(); //added by moqeet
+						visibilityApproveFeedbackButtons(true);
 						addMore.setVisible(false);
 						btnLibrary.setVisible(false);
 						seperator.setVisible(true);
@@ -549,14 +585,20 @@ public class RisksView extends Composite {
 
 			}
 
-		});
-
+		});  
 	}
 
 	private void enableRiskRows() {
 		for (int i = 0; i < riskRows.getWidgetCount(); i++) {
 			RiskRow riskRow = (RiskRow) riskRows.getWidget(i);
 			riskRow.enableFields();
+		}
+	}
+	
+	private void disableRiskRows() {
+		for (int i = 0; i < riskRows.getWidgetCount(); i++) {
+			RiskRow riskRow = (RiskRow) riskRows.getWidget(i);
+			riskRow.enableDataFields(false);;
 		}
 	}
 
@@ -583,6 +625,7 @@ public class RisksView extends Composite {
 		initiationButtonsPanel.setVisible(true);
 		addMore.setVisible(true);
 		btnLibrary.setVisible(true);
+		packageFeatures();
 	}
 
 	public void disableInitiationpanel() {
@@ -595,6 +638,7 @@ public class RisksView extends Composite {
 		approvalButtonsPanel.setVisible(true);
 		addMore.setVisible(true);
 		btnLibrary.setVisible(true);
+		packageFeatures();
 	}
 
 	public void disableApprovalpanel() {
@@ -602,7 +646,7 @@ public class RisksView extends Composite {
 		addMore.setVisible(false);
 		btnLibrary.setVisible(false);
 	}
-
+	
 	public void disableFields() {
 		addMore.setVisible(false);
 		btnLibrary.setVisible(false);
@@ -612,11 +656,20 @@ public class RisksView extends Composite {
 	public void enableFields() {
 		addMore.setVisible(true);
 		btnLibrary.setVisible(true);
-		//saveRisks.setVisible(true);
+		packageFeatures();
 	}
 
 	public void showhideSaveSubmitButtons(boolean flag) {
 		saveRisks.setVisible(flag);
 		submit.setVisible(flag);
+	} 
+	
+	private void packageFeatures( ) {
+		if(userPackage.equalsIgnoreCase("Basic") || userPackage.equalsIgnoreCase("Gold")) { 
+			btnLibrary.setVisible(false); 
+			addMore.getElement().getStyle().setMarginLeft(1150, Unit.PX);
+		  }
+		  else
+			  addMore.getElement().getStyle().setMarginLeft(1050, Unit.PX);
 	}
 }

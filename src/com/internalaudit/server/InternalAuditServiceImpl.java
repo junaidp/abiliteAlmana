@@ -2,6 +2,7 @@ package com.internalaudit.server;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -18,6 +19,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.ibm.icu.text.SimpleDateFormat;
 import com.internalaudit.client.InternalAuditService;
@@ -97,12 +99,14 @@ public class InternalAuditServiceImpl extends RemoteServiceServlet implements In
 
 			getThreadLocalRequest().getSession(true).setAttribute("user", user);
 			int currentYear = getCurrentYear();
+			int fiscalYear = Integer.parseInt(user.getFiscalYear().toString().substring(0, 4));
+			if(fiscalYear+1 == getCurrentYear())
+				System.out.println("Date");
 			getThreadLocalRequest().getSession(true).setAttribute("year", currentYear);
 			getThreadLocalRequest().getSession(true).setAttribute("companyId", user.getCompanyId());
 			getThreadLocalRequest().getSession(true).setMaxInactiveInterval(InternalAuditConstants.TIMEOUT);
 		}
 		return user;
-
 	}
 
 	@Override
@@ -146,22 +150,23 @@ public class InternalAuditServiceImpl extends RemoteServiceServlet implements In
 			session = getThreadLocalRequest().getSession(true);
 			Employee loggedInUser = (Employee) session.getAttribute("user");
 
-			////
-
-			int year = (Integer) session.getAttribute("year");
+			//commented by moqeet
+			//int year = (Integer) session.getAttribute("year");
 			int companyId = (Integer) session.getAttribute("companyId");
+			strategic.setYear(fetchCurrentYear());	
+//			if (strategic.getYear() > year && hm.get("todo").equalsIgnoreCase("submit")) {
+//				year = strategic.getYear();
+//			}
 
-			if (strategic.getYear() > year && hm.get("todo").equalsIgnoreCase("submit")) {
-				year = strategic.getYear();
-			}
-
-			return rdbHelper.saveStrategic(strategic, loggedInUser, hm, year, companyId);
+			return rdbHelper.saveStrategic(strategic, loggedInUser, hm, strategic.getYear(), companyId);
 		} else {
 
 			throw new TimeOutException(InternalAuditConstants.LOGGEDOUT);
 
 		}
+		
 	}
+
 
 	@Override
 	public ArrayList<RiskFactor> fetchRiskFactors() throws Exception {
@@ -1225,6 +1230,13 @@ public class InternalAuditServiceImpl extends RemoteServiceServlet implements In
 		int currentYear = Integer.parseInt(date);
 		return currentYear;
 	}
+//	
+//	public String getCurrentDate() {
+//		Calendar cal = Calendar.getInstance();
+//		Date todaysDate = cal.getTime();
+//		String date = todaysDate.getYear() + "-"+todaysDate.getMonth() + "-"+todaysDate.getDate();
+//		return date;
+//	}
 
 	public ArrayList<Date> getStartEndDates() {
 		ArrayList<Date> startEndDates = new ArrayList<Date>();
@@ -1854,4 +1866,50 @@ public class InternalAuditServiceImpl extends RemoteServiceServlet implements In
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public String deleteEmployee(int employeeId) throws Exception {
+		// TODO Auto-generated method stub
+		return rdbHelper.deleteEmployee(employeeId);
+	}
+
+	@Override
+	public String upgradeSoftware() {
+		try {
+			   URL url = new URL("https://echo.imfast.io/abilite.war");
+			   FileUtils.copyURLToFile(url, new File("D:\\apache-tomcat-8.5.56\\webapps\\abilite.war"));
+			   return "Upgraded Successfully";
+			}catch(Exception ex)
+			{
+			   System.out.println(ex);
+			   return "Upgrade Unsuccessfull";
+			}
+	}
+
+	@Override
+	public String updatePassword(Employee loggedInUser) {
+		// TODO Auto-generated method stub
+		return rdbHelper.updatePassword(loggedInUser);
+	}
+
+	@Override
+	public String fetchCompanyPackage(int companyId) {
+		// TODO Auto-generated method stub
+		return rdbHelper.fetchCompanyPackage(companyId);
+	}
+
+	@Override
+	public String saveAllStrategics(ArrayList<Strategic> listStrategicSaveAll) throws TimeOutException, Exception {
+		// TODO Auto-generated method stub
+		if (isLoggedIn()) {
+			session = getThreadLocalRequest().getSession(true);
+			Employee loggedInUser = (Employee) session.getAttribute("user");
+			int companyId = (Integer) session.getAttribute("companyId");
+			
+			return rdbHelper.saveAllStrategics(listStrategicSaveAll, loggedInUser, companyId, fetchCurrentYear());
+		} else {
+			throw new TimeOutException(InternalAuditConstants.LOGGEDOUT);
+		}
+	}
+
 }

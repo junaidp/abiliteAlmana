@@ -30,6 +30,7 @@ import com.internalaudit.client.event.MainEvent;
 import com.internalaudit.client.event.ReportingEvent;
 import com.internalaudit.client.event.ReportsEvent;
 import com.internalaudit.client.view.AuditPlanningView;
+import com.internalaudit.client.view.ChangePassword;
 import com.internalaudit.client.view.DisplayAlert;
 import com.internalaudit.client.view.LoadingPopup;
 import com.internalaudit.client.view.PopupsView;
@@ -88,6 +89,8 @@ public class MainPresenter implements Presenter
 		VerticalLayoutContainer getVpnlDashBoardNew();
 
 		VerticalPanel getContainerAuditPlanning();
+		
+		Anchor getChangePassword();
 
 	}
 
@@ -230,7 +233,7 @@ public class MainPresenter implements Presenter
 			@Override
 			public void onClick(ClickEvent event) {
 				final FeedbackWidget feedBackWidget = new FeedbackWidget();
-				final PopupsView popup = new PopupsView(feedBackWidget, "Feedback");
+				final PopupsView popup = new PopupsView(feedBackWidget, "Help/Feedback", "500px", "100%");
 				popup.hideCloseBtn();
 				feedBackWidget.getBtnSubmit().addClickHandler(new ClickHandler() {
 
@@ -242,6 +245,16 @@ public class MainPresenter implements Presenter
 
 			}
 
+		});
+		
+		display.getChangePassword().addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent arg0) {
+				ChangePassword changePassword = new ChangePassword(loggedInUser);
+				PopupsView popUpChangePassword = new PopupsView(changePassword, "Change Password");
+				changePassword.setPopUpThisView(popUpChangePassword);
+			}
 		});
 
 		display.getWelcome().setText(display.getLoggedInUser().getEmployeeName() + " ");

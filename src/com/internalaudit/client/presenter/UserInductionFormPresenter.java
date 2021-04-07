@@ -88,6 +88,8 @@ public class UserInductionFormPresenter implements Presenter
 		Label getLblPasswordError();
 
 		Label getLblUserNameError();
+		
+		Label getLblUsrLimitExceedError();
 
 		Label getLblEmailError();
 
@@ -407,8 +409,14 @@ public class UserInductionFormPresenter implements Presenter
 				} else if (result.equalsIgnoreCase(InternalAuditConstants.USERNOTAVAILABLE)) {
 					display.getLblUserNameError().setText(InternalAuditConstants.USERNOTAVAILABLE);
 					display.getLblUserNameError().setVisible(true);
-				} else {
+				} 
+				 else if (result.equalsIgnoreCase(InternalAuditConstants.USERLIMITEXCEED)) {
+						display.getLblUsrLimitExceedError().setText(InternalAuditConstants.USERLIMITEXCEED);
+						display.getLblUsrLimitExceedError().setVisible(true);
+					} 
+				else {
 					display.getLblUserNameError().setVisible(false);
+					display.getLblUsrLimitExceedError().setVisible(false);
 					new DisplayAlert(result);
 					clearFields();
 					fetchEmployees();

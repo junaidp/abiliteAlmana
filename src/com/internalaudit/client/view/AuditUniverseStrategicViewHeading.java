@@ -50,8 +50,8 @@ public class AuditUniverseStrategicViewHeading extends Composite {
 		// lblStrategicObjective.setWidth("553px");
 		// lblStrategicObjective.addStyleName("labelspace");
 		//lblObjectiveOwner.setWidth("180px");
-		relevantDivision.setWidth("180px");
-		relevantDepartment.setWidth("180px");
+		relevantDivision.setWidth("220px");
+		relevantDepartment.setWidth("230px");
 		objectiveId.setWordWrap(false);
 		objectiveAchievementDate.setWordWrap(false);
 		// lblStrategicObjective.addStyleName("labelTitle");
@@ -60,7 +60,7 @@ public class AuditUniverseStrategicViewHeading extends Composite {
 		objectiveAchievementDate.addStyleName("labelTitle");
 		// objectiveId.addStyleName("labelTitle");
 		lblStrategicObjective.addStyleName("labelspace");
-		lblStrategicObjective.setWidth("610px");
+		lblStrategicObjective.setWidth("498px");
 		// objectiveId.addStyleName("white");
 	}
 

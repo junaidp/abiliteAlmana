@@ -365,4 +365,14 @@ public interface InternalAuditServiceAsync {
 
 	void fetchStrategicSubProcess(int id, AsyncCallback<StrategicSubProcess> asyncCallback);
 
+	void deleteEmployee(int employeeId, AsyncCallback<String> callback);
+
+	void upgradeSoftware(AsyncCallback<String> asyncCallback);
+
+	void updatePassword(Employee loggedInUser, AsyncCallback<String> asyncCallback);
+
+	void fetchCompanyPackage(int companyId, AsyncCallback<String> asyncCallback);
+
+	void saveAllStrategics(ArrayList<Strategic> listStrategicSaveAll, AsyncCallback<String> asyncCallback);
+
 }

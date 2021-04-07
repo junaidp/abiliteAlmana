@@ -79,7 +79,7 @@ public class FinalAuditablesViewData {
 		ArrayList<String> auditableUnits = new ArrayList<String>();
 		ArrayList<HorizontalPanel> hpnlContainer = new ArrayList<HorizontalPanel>();
 
-		int count = 0;
+//		int count = 0;
 		for (int i = 0; i < strategic.size(); i++) {
 
 			Button btnApprove = new Button("Approve");
@@ -96,8 +96,8 @@ public class FinalAuditablesViewData {
 			Label lblUnit = new Label(strategic.get(i).getAuditableUnit());
 
 			lblUnit.setWidth("505px");
-			if (!auditableUnits.contains(strategic.get(i).getAuditableUnit())) {
-				count++;
+//			if (!auditableUnits.contains(strategic.get(i).getAuditableUnit())) {
+//				count++;
 				HorizontalPanel hpnlMain = new HorizontalPanel();
 
 				auditableUnits.add(strategic.get(i).getAuditableUnit());
@@ -175,7 +175,7 @@ public class FinalAuditablesViewData {
 					}
 				});
 
-			}
+//			}
 
 		}
 

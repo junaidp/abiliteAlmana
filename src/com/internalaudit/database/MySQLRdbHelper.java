@@ -43,6 +43,7 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFCell;
@@ -175,6 +176,7 @@ public class MySQLRdbHelper {
 			Criteria crit = session.createCriteria(Employee.class);
 			crit.add(Restrictions.eq("email", userid));
 			crit.add(Restrictions.eq("password", password));
+			crit.add(Restrictions.eq("status", 1));
 			crit.createAlias("countryId", "empcoun");
 			crit.createAlias("cityId", "empcit");
 			crit.createAlias("reportingTo", "empRep");
@@ -529,6 +531,8 @@ public class MySQLRdbHelper {
 			// crit.createAlias("companyId", "company");
 			crit.createAlias("skillId", "skill");
 			crit.add(Restrictions.ne("employeeId", 0));
+			//2020 hamza
+			crit.add(Restrictions.eq("status", 1));
 			crit.add(Restrictions.eq("companyId", companyId));
 			List rsList = crit.list();
 			for (Iterator it = rsList.iterator(); it.hasNext();) {
@@ -566,6 +570,7 @@ public class MySQLRdbHelper {
 			crit.createAlias("skillId", "skill");
 			crit.createAlias("reportingTo", "reporting");
 			crit.createAlias("reporting.reportingTo", "reportingrep");
+			crit.add(Restrictions.eq("status", 1));
 			crit.createAlias("reportingrep.skillId", "reportingrepskill");
 			crit.add(Restrictions.eq("employeeId", employeeId));
 			List rsList = crit.list();
@@ -846,6 +851,7 @@ public class MySQLRdbHelper {
 			Criteria crit = session.createCriteria(Employee.class);
 
 			crit.createAlias("skillId", "skill");
+			crit.add(Restrictions.eq("status", 1));
 			// crit.createAlias("companyId", "company");
 			crit.add(Restrictions.eq("employeeId", userId));
 			if (crit.list().size() > 0) {
@@ -961,8 +967,8 @@ public class MySQLRdbHelper {
 
 			tr.commit();
 			// saveStrategicAudit(strategic);
-			if (strategic.getPhase() == 1) {
-				saveDepartments(strategic);
+			if (clientSideStrategic.getPhase() == 1) {
+				saveDepartments(clientSideStrategic);
 			}
 			logger.info(String
 					.format("(Inside saveOneStrategic) saving one strategic for year : " + year + " of User Logged In "
@@ -1172,6 +1178,7 @@ public class MySQLRdbHelper {
 		strategic.setStrategicObjective(clientSideStrategic.getStrategicObjective());
 		strategic.setAcheivementDate(clientSideStrategic.getAcheivementDate());
 		strategic.setRelevantDepartment(clientSideStrategic.getRelevantDepartment());
+		strategic.setStrategicDepartments(clientSideStrategic.getStrategicDepartments());
 		strategic.setAudit(clientSideStrategic.isAudit());
 
 		// Save List of subProcess against strategic.
@@ -1379,7 +1386,7 @@ public class MySQLRdbHelper {
 		} finally {
 			session.close();
 		}
-		Collections.reverse(strategics);
+//		Collections.reverse(strategics);
 		return strategics;
 	}
 	
@@ -1511,11 +1518,12 @@ public class MySQLRdbHelper {
 			crit.add(Restrictions.eq("audit", true));
 			crit.add(Restrictions.eq("phase", 5));// HERE
 			crit.add(Restrictions.eq("approvedByAuditHead", true));
+//			crit.add(Restrictions.eq("auditableUnit", "Billing Section"));
 
 			crit.add(Restrictions.ne("status", "deleted"));
 			List rsList = crit.list();
 			crit.createAlias("relevantDepartment", "dept");
-			ArrayList<String> strategicNames = new ArrayList<String>();
+//			ArrayList<String> strategicNames = new ArrayList<String>();
 			for (Iterator it = rsList.iterator(); it.hasNext();) {
 				Strategic strategic = (Strategic) it.next();
 				StrategicDTO strategicDTO = new StrategicDTO();
@@ -1531,10 +1539,10 @@ public class MySQLRdbHelper {
 				strategicDTO.setJobName(strategic.getStrategicObjective());
 				// strategicDTO.setDepartments(fetchStrategicDepartments(strategicDTO,
 				// strategic.getId()));
-				if (!strategicNames.contains(strategic.getAuditableUnit())) {
-					strategicNames.add(strategic.getAuditableUnit());
+//				if (!strategicNames.contains(strategic.getAuditableUnit())) {//removed by Moqeet
+//					strategicNames.add(strategic.getAuditableUnit());
 					strategics.add(strategicDTO);
-				}
+//				}
 			}
 
 			logger.info(String.format("(Inside fetchSchdulingStrategic) fetching scheduling strategic for year : "
@@ -1625,6 +1633,9 @@ public class MySQLRdbHelper {
 			for (Iterator it = rsList.iterator(); it.hasNext();) {
 				Strategic strategic = (Strategic) it.next();
 				strategic.setLoggedInUser(employeeId);
+				//Division and Departments set by moqeet
+				strategic.setStrategicDepartments(fetchStrategicdepartments(strategic, session));
+				strategic.setDivision(fetchStrategicDivision(strategic, session));
 				RiskAssesmentDTO riskAssesmentDTO = new RiskAssesmentDTO();
 				strategics.add(strategic);
 				riskAssesmentDTO.setStrategic(strategic);
@@ -2115,7 +2126,7 @@ public class MySQLRdbHelper {
 
 			crit.add(Restrictions.eq("year", year));// yr added
 			crit.add(Restrictions.eq("companyId", companyId));// yr added
-
+			
 			List rsList = crit.list();
 
 			for (Iterator it = rsList.iterator(); it.hasNext();) {
@@ -2229,6 +2240,7 @@ public class MySQLRdbHelper {
 			Criteria crit = session.createCriteria(Employee.class);
 			crit.createAlias("cityId", "city");
 			crit.createAlias("countryId", "countryId");
+			crit.add(Restrictions.eq("status", 1));
 			// crit.createAlias("companyId", "company");
 
 			crit.createAlias("skillId", "skill");
@@ -2461,6 +2473,7 @@ public class MySQLRdbHelper {
 			Criteria crit = session.createCriteria(Employee.class);
 			crit.createAlias("skillId", "skill");
 			crit.createAlias("countryId", "countryId");
+			crit.add(Restrictions.eq("status", 1));
 			crit.add(Restrictions.in("skill.skillId", depIds));// lets see what
 			// it
 			crit.add(Restrictions.ne("employeeId", 0));
@@ -2531,6 +2544,7 @@ public class MySQLRdbHelper {
 
 	public ArrayList<Employee> fetchEmployeesBySkillId(int jobId, int companyId) {
 		Session session = null;
+//		job = 1;
 		ArrayList<Integer> skills = fetchJobSkills(jobId, companyId);
 		ArrayList<Employee> employees = new ArrayList<Employee>();
 		try {
@@ -2538,6 +2552,7 @@ public class MySQLRdbHelper {
 			Criteria crit = session.createCriteria(Employee.class);
 			crit.createAlias("skillId", "skill");
 			crit.createAlias("countryId", "countryId");
+			crit.add(Restrictions.eq("status", 1));
 			crit.add(Restrictions.in("skill.skillId", skills));// lets see what
 			// it
 			crit.add(Restrictions.ne("employeeId", 0));
@@ -3130,6 +3145,7 @@ public class MySQLRdbHelper {
 			crit.createAlias("skillId", "skill");
 
 			/// Change here
+			crit.add(Restrictions.eq("status", 1));
 			crit.add(Restrictions.ne("rollId", 1));
 			// crit.add(Restrictions.ne("roll.rollId", 4));
 			crit.add(Restrictions.ne("rollId", 4));
@@ -3825,7 +3841,6 @@ public class MySQLRdbHelper {
 				// check which field needs to be updated
 
 				if ("jobstatus".equals(fieldToUpdate)) {
-
 					prevCreated.setJobStatus(e.getJobStatus());
 					prevCreated.setYear(year);
 					prevCreated.setCompanyId(companyId);
@@ -3970,7 +3985,6 @@ public class MySQLRdbHelper {
 
 			for (int i = 0; i < needToBeSynced.size(); ++i) {
 				AuditEngagement newRecord = new AuditEngagement();
-
 				newRecord.setJobStatus("Not Started");
 				newRecord.setYear(year);
 				newRecord.setCompanyId(companyId);
@@ -4182,7 +4196,8 @@ public class MySQLRdbHelper {
 				messageBodyPart.setFileName(filename);
 			}
 
-			multipart.addBodyPart(messageBodyPart);
+//Redudant added, added before		
+//			multipart.addBodyPart(messageBodyPart);
 
 			// Send the complete message parts
 			msg.setContent(multipart);
@@ -4204,7 +4219,6 @@ public class MySQLRdbHelper {
 		try {
 			session = sessionFactory.openSession();
 			Criteria crit = session.createCriteria(RiskControlMatrixEntity.class);
-
 			// crit.add(Restrictions.eq("auditEngageId", auditEngId));
 			crit.add(Restrictions.eq("year", year));
 			crit.add(Restrictions.eq("companyId", companyId));
@@ -4271,7 +4285,7 @@ public class MySQLRdbHelper {
 						HibernateDetachUtility.SerializationType.SERIALIZATION);
 				HibernateDetachUtility.nullOutUninitializedFields(risk.getSuggestedControlsId().getRiskId(),
 						HibernateDetachUtility.SerializationType.SERIALIZATION);
-
+				
 				record.add(risk);
 			}
 
@@ -4470,7 +4484,7 @@ public class MySQLRdbHelper {
 			crit.createAlias("cityId", "city");
 			crit.createAlias("countryId", "countryId");
 			// crit.createAlias("companyId", "company");
-
+			crit.add(Restrictions.eq("status", 1));
 			crit.createAlias("skillId", "skill");
 			List rsList = crit.list();
 			for (Iterator it = rsList.iterator(); it.hasNext();) {
@@ -5053,7 +5067,7 @@ public class MySQLRdbHelper {
 			}
 			exception.setYear(year);
 			exception.setCompanyId(companyId);
-
+			
 			saveRecommendation(exception.getRecommendation());
 			session.update(exception);
 			session.flush();
@@ -5309,7 +5323,6 @@ public class MySQLRdbHelper {
 			session = sessionFactory.openSession();
 			Criteria crit = session.createCriteria(AuditStep.class);
 			crit.add(Restrictions.eq("auditStepId", auditStepId));
-
 			crit.createAlias("initiatedBy", "initiated");
 			crit.createAlias("initiated.countryId", "initiatedCount");
 			crit.createAlias("initiated.reportingTo", "initiatedRep");
@@ -7549,9 +7562,13 @@ public class MySQLRdbHelper {
 
 	public String saveEmployee(Employee employee, int year, int companyId) {
 		Session session = null;
-		if (userAvailable(employee.getEmail())) {
+		boolean userAvailable = userAvailable(employee.getEmail());
+		boolean existingUserLimit = getExistingUserInDb(employee,companyId) ;
+//		if (userAvailable(employee.getEmail()) && getExistingUserInDb(employee,companyId) ) {
+		if (userAvailable && existingUserLimit ) {
 			try {
 				session = sessionFactory.openSession();
+				employee.setStatus(1);
 				session.save(employee);
 
 				if (employee.getReportingTo().getEmployeeId() == 0) {
@@ -7574,7 +7591,12 @@ public class MySQLRdbHelper {
 				session.close();
 			}
 		} else {
-			return InternalAuditConstants.USERNOTAVAILABLE;
+			if (!userAvailable) {
+				return InternalAuditConstants.USERNOTAVAILABLE;
+			}
+			else {
+				return InternalAuditConstants.USERLIMITEXCEED;
+			}
 		}
 	}
 
@@ -7610,6 +7632,7 @@ public class MySQLRdbHelper {
 		try {
 			session = sessionFactory.openSession();
 			Criteria crit = session.createCriteria(Employee.class);
+			crit.add(Restrictions.eq("status", 1));
 			crit.add(Restrictions.eq("email", email));
 			if (crit.list().size() > 0) {
 				return false;
@@ -7797,6 +7820,7 @@ public class MySQLRdbHelper {
 			session = sessionFactory.openSession();
 			Criteria crit = session.createCriteria(Employee.class);
 			crit.createAlias("skillId", "skill");
+			crit.add(Restrictions.eq("status", 1));
 			crit.add(Restrictions.eq("skill.skillId", skillId));
 			crit.add(Restrictions.eq("companyId", companyId));
 			if (crit.list().size() >= noOfResources) {
@@ -7929,7 +7953,8 @@ public class MySQLRdbHelper {
 
 			// crit.createAlias("companyId", "company");
 			crit.createAlias("skillId", "skill");
-			crit.add(Restrictions.ne("employeeId", employeeId));
+			crit.add(Restrictions.eq("status", 1));
+			crit.add(Restrictions.eq("employeeId", employeeId));
 			// crit.add(Restrictions.eq("companyId", companyId));
 			List rsList = crit.list();
 			for (Iterator it = rsList.iterator(); it.hasNext();) {
@@ -7961,6 +7986,7 @@ public class MySQLRdbHelper {
 	public String updateUser(int previousHours, Employee employee) throws Exception {
 		try {
 			session = sessionFactory.openSession();
+			employee.setStatus(1);
 			session.update(employee);
 
 			if (employee.getReportingTo().getEmployeeId() == 0) {
@@ -9637,8 +9663,8 @@ public class MySQLRdbHelper {
 
 		} finally {
 			session.close();
-
 		}
+		Collections.reverse(subProcess);
 		return subProcess;
 	}
 
@@ -9995,7 +10021,7 @@ public class MySQLRdbHelper {
 	private void setNotificationStatus(int jobId, Session session, JobStatusDTO jobStatusDTO) {
 		try {
 			Criteria critNotification = session.createCriteria(AuditEngagement.class);
-			critNotification.createAlias("jobCreation", "job");
+			critNotification.createAlias("jobCreationId", "job");
 			critNotification.add(Restrictions.eq("job.jobCreationId", jobId));
 			// crit.add(Restrictions.isNotEmpty("notificationSentDate"));
 			// crit.add(Restrictions.isNotNull("notificationSentDate"));
@@ -10756,21 +10782,30 @@ public class MySQLRdbHelper {
 			HSSFWorkbook workbook = new HSSFWorkbook();
 			HSSFSheet worksheet = workbook.createSheet("SamplingAudit Worksheet");
 			HSSFRow row = worksheet.createRow((short) 0);
-			row.createCell((short) 0).setCellValue("Date");
-			row.createCell((short) 1).setCellValue("Reference No");
-			row.createCell((short) 2).setCellValue("Description");
-			row.createCell((short) 3).setCellValue("Amount");
-			row.createCell((short) 4).setCellValue("Job ID");
-			row.createCell((short) 5).setCellValue("Location");
+			row.createCell((short) 0).setCellValue("Category");
+			row.createCell((short) 1).setCellValue("Doc#");
+			row.createCell((short) 2).setCellValue("Date");
+			row.createCell((short) 3).setCellValue("Item Code");
+			row.createCell((short) 4).setCellValue("Item Description");
+			row.createCell((short) 5).setCellValue("Quantity");
+			row.createCell((short) 6).setCellValue("U.Cost");
+			row.createCell((short) 7).setCellValue("Trans.Cost");
+			row.createCell((short) 8).setCellValue("Code");
+			row.createCell((short) 9).setCellValue("Name");
 
 			for (int i = 0; i < samplingList.size(); i++) {
 				HSSFRow row1 = worksheet.createRow((short) i + 1);
-				row1.createCell((short) 0).setCellValue(samplingList.get(i).getDate());
-				row1.createCell((short) 1).setCellValue(samplingList.get(i).getReferenceNo());
-				row1.createCell((short) 2).setCellValue(samplingList.get(i).getDescription());
-				row1.createCell((short) 3).setCellValue(samplingList.get(i).getAmount());
-				row1.createCell((short) 4).setCellValue(samplingList.get(i).getJobId());
-				row1.createCell((short) 5).setCellValue(samplingList.get(i).getLocation());
+				row1.createCell((short) 0).setCellValue(samplingList.get(i).getCategory());
+				row1.createCell((short) 1).setCellValue(samplingList.get(i).getDocNo());
+				row1.createCell((short) 2).setCellValue(samplingList.get(i).getDate());
+				row1.createCell((short) 3).setCellValue(samplingList.get(i).getItemCode());
+				row1.createCell((short) 4).setCellValue(samplingList.get(i).getDescription());
+				row1.createCell((short) 5).setCellValue(samplingList.get(i).getQuantity());
+				row1.createCell((short) 6).setCellValue(samplingList.get(i).getUcost());
+				row1.createCell((short) 7).setCellValue(samplingList.get(i).getTransCost());
+				row1.createCell((short) 8).setCellValue(samplingList.get(i).getCode());
+				row1.createCell((short) 9).setCellValue(samplingList.get(i).getName());
+				
 
 
 			}
@@ -10794,22 +10829,25 @@ public class MySQLRdbHelper {
 	private String reportSamplingAuditPDF(ArrayList<SamplingExcelSheetEntity> samplingList,
 			String rootDir, Integer auditStepId) throws DocumentException {
 		try {
-
-			Rectangle pagesize = new Rectangle(612, 861);
+			//612-861
+			Rectangle pagesize = new Rectangle(712, 861);
 			Document document = new Document(PageSize.A4);
 
-			PdfPTable table = new PdfPTable(new float[] { 1,2, 2, 3, 2, 2 ,2  });
+			PdfPTable table = new PdfPTable(new float[] { 1,2, 2, 2, 2, 3 ,2, 2, 2, 2, 2  });
 
 			table.setWidthPercentage(100);
 			table.getDefaultCell().setHorizontalAlignment(Element.ALIGN_CENTER);
 			table.addCell(new Phrase("Sr#", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+			table.addCell(new Phrase("Category", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+			table.addCell(new Phrase("Doc #", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
 			table.addCell(new Phrase("Date", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
-			table.addCell(new Phrase("Reference No", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
-			table.addCell(new Phrase("Description", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
-			table.addCell(new Phrase("Amount", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
-			table.addCell(new Phrase("Job ID", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
-			table.addCell(new Phrase("Location", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
-
+			table.addCell(new Phrase("Item Code", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+			table.addCell(new Phrase("Item description", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+			table.addCell(new Phrase("Quantity", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+			table.addCell(new Phrase("U.Cost", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+			table.addCell(new Phrase("Trans.Cost", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+			table.addCell(new Phrase("Code", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+			table.addCell(new Phrase("Name", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
 			
 			table.setHeaderRows(1);
 			PdfPCell[] cells = table.getRow(0).getCells();
@@ -10823,18 +10861,26 @@ public class MySQLRdbHelper {
 
 				count++;
 				table.addCell(new Phrase(count + "", FontFactory.getFont(FontFactory.HELVETICA, 8)));
+				table.addCell(new Phrase(samplingList.get(i).getCategory(),
+						FontFactory.getFont(FontFactory.HELVETICA, 8)));
+				table.addCell(
+						new Phrase(samplingList.get(i).getDocNo()+"", FontFactory.getFont(FontFactory.HELVETICA, 8)));
 				table.addCell(new Phrase(samplingList.get(i).getDate(),
 						FontFactory.getFont(FontFactory.HELVETICA, 8)));
 				table.addCell(
-						new Phrase(samplingList.get(i).getReferenceNo()+"", FontFactory.getFont(FontFactory.HELVETICA, 8)));
-				table.addCell(new Phrase(samplingList.get(i).getDescription(),
-						FontFactory.getFont(FontFactory.HELVETICA, 8)));
+						new Phrase(samplingList.get(i).getItemCode()+"", FontFactory.getFont(FontFactory.HELVETICA, 8)));
 				table.addCell(
-						new Phrase(samplingList.get(i).getAmount()+"", FontFactory.getFont(FontFactory.HELVETICA, 8)));
+						new Phrase(samplingList.get(i).getDescription(), FontFactory.getFont(FontFactory.HELVETICA, 8)));
 				table.addCell(
-						new Phrase(samplingList.get(i).getJobId(), FontFactory.getFont(FontFactory.HELVETICA, 8)));
+						new Phrase(samplingList.get(i).getQuantity()+"", FontFactory.getFont(FontFactory.HELVETICA, 8)));
 				table.addCell(
-						new Phrase(samplingList.get(i).getLocation(), FontFactory.getFont(FontFactory.HELVETICA, 8)));
+						new Phrase(samplingList.get(i).getUcost()+"", FontFactory.getFont(FontFactory.HELVETICA, 8)));
+				table.addCell(
+						new Phrase(samplingList.get(i).getTransCost()+"", FontFactory.getFont(FontFactory.HELVETICA, 8)));
+				table.addCell(
+						new Phrase(samplingList.get(i).getCode()+"", FontFactory.getFont(FontFactory.HELVETICA, 8)));
+				table.addCell(
+						new Phrase(samplingList.get(i).getName(), FontFactory.getFont(FontFactory.HELVETICA, 8)));
 
 				
 				
@@ -10889,15 +10935,6 @@ public class MySQLRdbHelper {
 		try {
 			
 			listSampling = new ArrayList<SamplingExcelSheetEntity>();
-			//for reading xls file 
-			/*InputStream ExcelFileToRead = new FileInputStream(filePath.getPath());
-			HSSFWorkbook wb;
-			wb = new HSSFWorkbook(ExcelFileToRead);
-
-			// XSSFWorkbook wb = new XSSFWorkbook(ExcelFileToRead);
-			HSSFSheet sheet = wb.getSheetAt(0);
-			HSSFRow row;
-			HSSFCell cell;*/
 				InputStream ExcelFileToRead = new FileInputStream(filePath.getPath());
 				OPCPackage pkg; 			
 				pkg = OPCPackage.open(ExcelFileToRead); 
@@ -10909,9 +10946,6 @@ public class MySQLRdbHelper {
 			
 			Iterator rows = sheet.rowIterator();
 			
-			
-			
-
 			while (rows.hasNext()) {
 				SamplingExcelSheetEntity samplingData = new SamplingExcelSheetEntity();
 
@@ -10922,26 +10956,107 @@ public class MySQLRdbHelper {
 											// samplingData.setId(rd.nextInt());
 				samplingData.setId(row.getRowNum());
 
-				XSSFCell date = row.getCell((short) 0);
-				samplingData.setDate(date.getStringCellValue());
+				
+				XSSFCell category = row.getCell((short) 0);
+				
+				
+				  if(category.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+					  samplingData.setCategory(category.getNumericCellValue()+"");
+				  }
+				  else if(category.getCellType() == Cell.CELL_TYPE_STRING) {
+				    	 samplingData.setCategory(category.getStringCellValue());
+				    }
+				
+				XSSFCell desc = row.getCell((short) 4);
+					if(desc.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+						samplingData.setDescription(desc.getNumericCellValue()+"");
+					  }
+					  else if(desc.getCellType() == Cell.CELL_TYPE_STRING) {
+							samplingData.setDescription(desc.getStringCellValue());
+					    }
+				
+				XSSFCell name = row.getCell((short) 9);
+				if(name.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+					samplingData.setName(name.getNumericCellValue() + "");
+				  }
+				  else if(name.getCellType() == Cell.CELL_TYPE_STRING) {
+						samplingData.setName(name.getStringCellValue());
+				    }
+			
 
-				XSSFCell desc = row.getCell((short) 2);
-				samplingData.setDescription(desc.getStringCellValue());
+				XSSFCell docNo = row.getCell((short) 1);
+				
+					 if(docNo.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+						 samplingData.setDocNo(docNo.getNumericCellValue() + "");
+					  }
+					  else if(docNo.getCellType() == Cell.CELL_TYPE_STRING) {
+						  samplingData.setDocNo(docNo.getStringCellValue());
+					    }
 
+				 XSSFCell itemCode = row.getCell((short) 3);
+					
+					 if(itemCode.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+						 samplingData.setItemCode(itemCode.getNumericCellValue() + "");
+					  }
+					  else if(itemCode.getCellType() == Cell.CELL_TYPE_STRING) {
+						  samplingData.setItemCode(itemCode.getStringCellValue());
+					    }
+					 
+					 XSSFCell code = row.getCell((short) 8);
+						
+						if(code.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+							samplingData.setCode(code.getNumericCellValue()+ "");
+						  }
+						  else if(code.getCellType() == Cell.CELL_TYPE_STRING) {
+							  samplingData.setCode(code.getStringCellValue());
+						    }
+						 
 				// samplingData.setId(row.getRowNum());
 				
 
-				XSSFCell jobId = row.getCell((short) 4);
-				samplingData.setJobId(jobId.getStringCellValue());
+				XSSFCell date = row.getCell((short) 2);
+				if(date.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+					samplingData.setDate(date.getNumericCellValue()+"");
+				  }
+				  else if(date.getCellType() == Cell.CELL_TYPE_STRING) {
+					  samplingData.setDate(date.getStringCellValue());
+				    }
+				
 
-				XSSFCell location = row.getCell((short) 5);
+			//	XSSFCell location = row.getCell((short) 5);
 
 				if (row.getRowNum() > 0) {
-					XSSFCell refNo = row.getCell((short) 1);
-					samplingData.setReferenceNo(refNo.getNumericCellValue());
-
-					XSSFCell amount = row.getCell((short) 3);
-					samplingData.setAmount(amount.getNumericCellValue());
+					
+					
+					System.out.println(row.getRowNum()+ "");
+					XSSFCell quantity = row.getCell((short) 5);
+					if(quantity.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+						samplingData.setQuantity(quantity.getNumericCellValue() + "");
+					  }
+					  else if(quantity.getCellType() == Cell.CELL_TYPE_STRING) {
+						  samplingData.setQuantity(quantity.getStringCellValue());
+					    }
+					
+					
+					XSSFCell uCost = row.getCell((short) 6);
+					if(uCost.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+						samplingData.setUcost(uCost.getNumericCellValue()+ "");
+					  }
+					  else if(uCost.getCellType() == Cell.CELL_TYPE_STRING) {
+						  samplingData.setUcost(uCost.getStringCellValue());
+					    }
+					
+					
+					XSSFCell transCost = row.getCell((short) 7);
+					if(transCost.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+						samplingData.setTransCost(transCost.getNumericCellValue()+ "");
+					  }
+					  else if(transCost.getCellType() == Cell.CELL_TYPE_STRING) {
+						  samplingData.setTransCost(transCost.getStringCellValue());
+					    }
+					
+					
+					
 					listSampling.add(samplingData);
 				}
 				
@@ -11016,6 +11131,132 @@ public class MySQLRdbHelper {
 			session.close();
 		}
 		return jobsList;
+	}
+	
+	private boolean getExistingUserInDb(Employee employee, int companyId) {
+		Session session = null;
+		boolean allowUserAdd = false;
+		int employeCount;
+		
+		ArrayList<Employee> employees = new ArrayList<Employee>();
+		try {
+			session = sessionFactory.openSession();
+			Criteria crit = session.createCriteria(Employee.class);
+		//	crit.add(Restrictions.ne("employeeId", 0));
+			crit.add(Restrictions.eq("status", 1));
+			crit.add(Restrictions.eq("companyId", employee.getCompanyId()));
+			if(employee.getRollId() == 5) {
+				crit.add(Restrictions.eq("rollId", employee.getRollId()));
+			}
+			else {
+				crit.add(Restrictions.ne("rollId", 5));
+			}
+			List rsList = crit.list();
+			for (Iterator it = rsList.iterator(); it.hasNext();) {
+				Employee employee1 = (Employee) it.next();
+				employees.add(employee1);
+			}
+			employeCount = employees.size();
+			
+			if(employee.getRollId() == 5 &&  employeCount <= 19) {
+				allowUserAdd = true;
+			}
+			
+			else if(employee.getRollId() != 5 &&  employeCount <= 4) {
+				allowUserAdd =  true;
+			}
+			
+			else {
+				allowUserAdd = false;
+			}
+
+		} catch (Exception ex) {
+			System.out.println("fail in getExistingUserInDb");
+		}
+		return allowUserAdd;
+	}
+	
+	public String deleteEmployee(int employeeId) throws Exception {
+		try {
+			Employee employee = fetchSelectedEmployee(employeeId);
+			session = sessionFactory.openSession();
+			employee.setStatus(0);
+			session.update(employee);
+
+			if (employee.getReportingTo().getEmployeeId() == 0) {
+				employee.setReportingTo(employee);
+			}
+			session.saveOrUpdate(employee);
+			session.save(employee);
+			session.flush();
+		} catch (Exception ex) {
+			logger.warn(String.format("Exception occured in deleteEmployee", ex.getMessage()), ex);
+			return "Error Occured In deleting User";
+		} finally {
+			session.close();
+		}
+		return "Employee Eeleted Successfully";
+	}
+
+	public String updatePassword(Employee loggedInUser) {
+		Session session = null;
+		try {
+			session = sessionFactory.openSession(); 
+			loggedInUser.setPassword(loggedInUser.getPassword());
+			session.update(loggedInUser);
+			session.flush(); 
+			logger.info(String.format("(Inside updatePassword)update Password of User"));
+			return "Password Updated Successfully";
+		} catch (Exception ex) {
+			logger.warn(String.format("Exception occured in updatePassword", ex.getMessage()), ex);
+			return null;
+		} finally {
+			session.close();
+		}
+	}
+	
+	public String fetchCompanyPackage(int companyId) {
+		Session session = null;
+		String companyPackage = null;
+		try {
+			session = sessionFactory.openSession();
+			Criteria crit = session.createCriteria(Company.class);
+			crit.add(Restrictions.eq("companyId", companyId));
+			List rsList = crit.list();
+			for (Iterator it = rsList.iterator(); it.hasNext();) {
+				Company company = (Company) it.next();
+				companyPackage = company.getUserPackage();
+			}
+			logger.info(String
+					.format("(Inside fetchCompanyPackage)fetching  companyPackage for companyId:" + companyId + "" + new Date()));
+		} catch (Exception ex) {
+			logger.warn(String.format("Exception occured in fetchCompanyPackage", ex.getMessage()), ex);
+		} finally {
+			session.close();
+		}
+		return companyPackage;
+	}
+
+	public String saveAllStrategics(ArrayList<Strategic> listStrategicSaveAll,
+			Employee loggedInUser, int companyId, int year) {
+		try {
+			session = sessionFactory.openSession();
+			String tab = String.valueOf(listStrategicSaveAll.get(0).getTab());
+			for(Strategic strategic : listStrategicSaveAll) {
+				String todo = strategic.getStatus();	
+				todo = todo.substring(0, todo.length()-3);
+				saveOneStrategic(strategic, loggedInUser, todo, tab, year, companyId);
+			}
+			logger.info(
+					String.format("(Inside saveAllStrategics) saving all strategic for year : " + year + " of User Logged In "
+							+ loggedInUser + " under tab " + tab + " " + new Date()));
+		} catch (Exception ex) {
+			logger.warn(String.format("Exception occured in saveAllStrategics", ex.getMessage()), ex);
+
+		} finally {
+			session.close();
+		}
+		return "added";
 	}
 
 }

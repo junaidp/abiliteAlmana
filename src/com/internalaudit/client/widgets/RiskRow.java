@@ -45,6 +45,13 @@ public class RiskRow extends Composite {
 		rowContainer.add(riskControlMatrixView);
 		rowContainer.add(removeRow);
 	}
+	
+	public void enableDataFields(boolean flag) {
+		riskControlMatrixView.getListBoxRisk().setEnabled(flag);
+		riskControlMatrixView.getListBoxInherintRating().setEnabled(flag);
+		riskControlMatrixView.getListBoxControlRating().setEnabled(flag);
+		riskControlMatrixView.getTxtAreaControl().setEnabled(flag);
+	}
 
 	public Label getRiskId() {
 		return riskId;
@@ -81,7 +88,7 @@ public class RiskRow extends Composite {
 		// description.setEnabled(true);
 		// control.setEnabled(true);
 		removeRow.setVisible(true);
-		riskControlMatrixView.enableFields();
+		riskControlMatrixView.enableFields(); 
 	}
 
 	public RiskControlMatrixView getExistingControlView() {

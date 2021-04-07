@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -14,6 +13,7 @@ import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DecoratedPopupPanel;
 import com.google.gwt.user.client.ui.HTML;
@@ -49,9 +49,18 @@ public class AuditUniverseStrategicViewData {
 	private ArrayList<Division> divisions = new ArrayList<Division>();
 	private String actionperformed;
 	private Logger logger = Logger.getLogger("AuditUniverStrategicViewData");
+	private ArrayList<Strategic> listStrategicToSaveAll;
+	private ArrayList<Strategic> approveStrategic;
+	private ArrayList<Strategic> submitStrategic;
+	private ArrayList<Strategic> amendStrategic;
+	private ArrayList<Strategic> listStrategic;
+	private ArrayList<AuditUniverseStrategicView> listAuditUniverseStrategicView;
+	private ArrayList<Anchor> listAllStrategicAnchors;
+//	private int currentYear = 2020;
 
 	public void setData(final AuditUniverseStrategicView auditUniverseStrategicView) {
 		// this.auditUniverseStrategicView = auditUniverseStrategicView;
+//		listAllStrategicAnchors = new ArrayList<Anchor>();
 		fetchObjectiveOwners();
 		fetchDivisions();
 		// setHandlers();
@@ -92,7 +101,7 @@ public class AuditUniverseStrategicViewData {
 		});
 	}
 
-	public void saveStrategic(final AuditUniverseStrategicView strategicView, final VerticalPanel vpnlStrategicData,
+	public void saveStrategic(final AuditUniverseStrategicView strategicView, final VerticalPanel vpnlStrategicDataMain,
 			final HorizontalPanel hpnlButtonInitiator, final HorizontalPanel hpnlButtonsApprovar, final Image btnAdd,
 			String todo, int tab, ButtonRound buttonRound) {
 		final ArrayList<Strategic> strategics = new ArrayList<Strategic>();
@@ -100,14 +109,21 @@ public class AuditUniverseStrategicViewData {
 		if (strategicView.getStrategicObjective().getText().equals("")
 				|| strategicView.getStrategicObjective().getText().equals("Enter Objective")) {
 			Window.alert("Objective name required");
-		} else {
+		} 
+		else if(strategicView.getListBoxDivision().getSelectedValue() == "0") {
+			Window.alert("Please select Division");
+		}
+		else if(strategicView.getListRelevantDepartment().getSelectedValue() == null) {
+				Window.alert("Please select Department(s)");
+		}
+		else {
 			// TEST CheckDate removed by faheem
 			// checkDate(strategicView, vpnlStrategicData,hpnlButtonInitiator,
 			// hpnlButtonsApprovar, btnAdd, todo,
 			// strategics, tab, buttonClicked);
-			saveStrategicToServer(strategicView, vpnlStrategicData, hpnlButtonInitiator, hpnlButtonsApprovar, btnAdd,
-					todo, strategics, tab, buttonRound);
-
+			saveStrategicToServer(strategicView, vpnlStrategicDataMain, hpnlButtonInitiator, hpnlButtonsApprovar, btnAdd,
+					todo, strategics, tab, buttonRound, true);
+//			strategicView.clearStrategicView();
 		}
 	}
 
@@ -134,7 +150,7 @@ public class AuditUniverseStrategicViewData {
 			public void onSuccess(Boolean dateValidt) {
 				if (dateValidt) {
 					saveStrategicToServer(strategicView, vpnlStrategicData, hpnlButtonInitiator, hpnlButtonsApprovar,
-							btnAdd, todo, strategics, tab, buttonClicked);
+							btnAdd, todo, strategics, tab, buttonClicked, true);
 				} else {
 					Window.alert("Date not valid");
 				}
@@ -146,7 +162,7 @@ public class AuditUniverseStrategicViewData {
 	private void saveStrategicToServer(final AuditUniverseStrategicView strategicView,
 			final VerticalPanel vpnlStrategicData, final HorizontalPanel hpnlButtonInitiator,
 			final HorizontalPanel hpnlButtonsApprovar, final Image btnAdd, String todo,
-			final ArrayList<Strategic> strategics, final int tab, final ButtonRound buttonRound) {
+			final ArrayList<Strategic> strategics, final int tab, final ButtonRound buttonRound, boolean flagSingleStrategic) {
 
 		buttonRound.setEnabled(false);
 		Strategic strategic = new Strategic();
@@ -166,20 +182,22 @@ public class AuditUniverseStrategicViewData {
 		Department department = new Department();
 		// department.setDepartmentId(Integer.parseInt(strategicView.getRelevantDepartment().getValue(strategicView.getRelevantDepartment().getSelectedIndex())));
 		//////
+		setDivision(strategic, strategicView.getListBoxDivision());
 		setDepartments(strategicView.getListRelevantDepartment(), strategic);
 		strategic.setRelevantDepartment(department);
 		strategic.setStrategicObjective(strategicView.getStrategicObjective().getText());
 		//added by Moqeet
-		for(int i = 0; i <strategicView.getListBoxDivision().getItemCount(); i++) {
-			if (strategicView.getListBoxDivision().isItemSelected(i)) {
-				strategic.setDivisionID(Integer.parseInt(strategicView.getListBoxDivision().getValue(i)));
-			}
-		}
+//		for(int i = 0; i <strategicView.getListBoxDivision().getItemCount(); i++) {
+//			if (strategicView.getListBoxDivision().isItemSelected(i)) {
+//				strategic.setDivisionID(Integer.parseInt(strategicView.getListBoxDivision().getValue(i)));
+//			}
+//		}
 		// strategic.setPhase("Identification");
 		strategic.setPhase(1);
 		strategic.setNextPhase(2);
 		// strategic.setNextPhase("RiskAssesment");
 		strategic.setComments(strategicView.getComment());
+//		strategic.setYear(fetchCurrentYear());
 		// strategic.setRatingComments();
 		// strategics.add(strategic);
 
@@ -190,6 +208,28 @@ public class AuditUniverseStrategicViewData {
 		}
 		hm.put("todo", todo);
 		hm.put("tab", tab + "");
+		if(flagSingleStrategic) {
+			saveStrategicToServerRPC(vpnlStrategicData, hpnlButtonInitiator, hpnlButtonsApprovar, btnAdd, tab, buttonRound,
+				strategic, hm);
+		}
+		else {
+			strategic.setStatus(todo);
+			strategic.setTab(tab);
+			listStrategicToSaveAll.add(strategic);
+		}
+	}
+
+	private void setDivision(Strategic strategic, ListBox listBoxDivision) {
+		Division division = new Division();
+		division.setDivisionID(Integer.parseInt(listBoxDivision.getSelectedValue()));
+		division.setDivisionName(listBoxDivision.getSelectedItemText());
+		strategic.setDivisionID(division.getDivisionID());
+		strategic.setDivision(division);
+	}
+
+	private void saveStrategicToServerRPC(final VerticalPanel vpnlStrategicData,
+			final HorizontalPanel hpnlButtonInitiator, final HorizontalPanel hpnlButtonsApprovar, final Image btnAdd,
+			final int tab, final ButtonRound buttonRound, Strategic strategic, HashMap<String, String> hm) {
 		rpcService.saveStrategic(strategic, hm, new AsyncCallback<String>() {
 
 			@Override
@@ -244,11 +284,91 @@ public class AuditUniverseStrategicViewData {
 			}
 		});
 	}
+	
+	private void saveAllStrategicsToServerRPC(final VerticalPanel vpnlStrategicData, final HorizontalPanel hpnlButtonsInitiator,
+			final HorizontalPanel hpnlButtonsApprovar, final Image btnAdd, final int tab, final ButtonRound buttonRound,
+			ArrayList<Strategic> listStrategicSaveAll) {
+		rpcService.saveAllStrategics(listStrategicSaveAll, new AsyncCallback<String>() {
+
+			@Override
+			public void onFailure(Throwable caught) {
+
+				//
+				logger.log(Level.INFO, "FAIL: saveStrategic .Inside Audit AuditAreaspresenter");
+				if (caught instanceof TimeOutException) {
+					History.newItem("login");
+				} else {
+					System.out.println("FAIL: saveStrategic .Inside AuditAreaspresenter");
+					Window.alert("FAIL: saveStrategic");// After FAIL ... write
+														// RPC Name NOT Method
+														// Name..
+				}
+
+				buttonRound.setEnabled(true);
+				Window.alert("save strategic failed");
+			}
+
+			@Override
+			public void onSuccess(String arg0) {
+				buttonRound.setEnabled(true);
+				vpnlStrategicData.clear();
+				final DecoratedPopupPanel popup = new DecoratedPopupPanel();
+				if (actionperformed.equalsIgnoreCase("save")) {
+					popup.setWidget(new Label("Identification Saved"));
+
+				} else if (actionperformed.equalsIgnoreCase("approve")) {
+					popup.setWidget(new Label("Identification Approved "));
+
+				} else if (actionperformed.equalsIgnoreCase("amend")) {
+					popup.setWidget(new Label("Feedback Submitted "));
+
+				} else {
+					popup.setWidget(new Label("Identification Submitted ! "));
+				}
+				popup.setPopupPosition(350, 350);
+				popup.show();
+				Timer time = new Timer() {
+					public void run() {
+						popup.removeFromParent();
+					}
+
+				};// timer for showing the popup of "update"
+				time.schedule(1500);
+
+				// for(int i=0; i< strategicList.size(); i++){
+				fetchStrategic(vpnlStrategicData, hpnlButtonsInitiator, hpnlButtonsApprovar, btnAdd, tab);
+				// }
+
+			}
+		});
+	}
+
+
+//	private int fetchCurrentYear() {
+//		rpcService.fetchCurrentYear(new AsyncCallback<Integer>() {
+//
+//			@Override
+//			public void onFailure(Throwable arg0) {
+//				// TODO Auto-generated method stub
+//				Window.alert("Unable to fetch current year for Strategic in Audit Universe Tab");
+//			}
+//
+//			@Override
+//			public void onSuccess(Integer arg0) {
+//				// TODO Auto-generated method stub
+//				currentYear = arg0;
+//			}
+//		});
+//		return currentYear;
+//	}
 
 	private void setDepartments(ListBox relevantDepartment, Strategic strategic) {
 		ArrayList<StrategicDepartments> strategicDepartments = new ArrayList<StrategicDepartments>();
 		for (int i = 0; i < relevantDepartment.getItemCount(); i++) {
 			if (relevantDepartment.isItemSelected(i)) {
+//				if(i == 0) {
+//					Window.alert(relevantDepartment.getItemCount()+"");
+//				}
 				StrategicDepartments strategicDepartment = new StrategicDepartments();
 				Department department = new Department();
 				department.setDepartmentId(Integer.parseInt(relevantDepartment.getValue(i)));
@@ -424,6 +544,9 @@ public class AuditUniverseStrategicViewData {
 
 	public void fetchStrategic(final VerticalPanel vpnlStrategic, final HorizontalPanel hpnlButtonInitiator,
 			final HorizontalPanel hpnlButtonsApprovar, final Image btnAdd, int tab) {
+//		if(listAllStrategicAnchors != null) {
+//			this.listAllStrategicAnchors = listAllStrategicAnchors;
+//		}
 		final LoadingPopup loadingPopup = new LoadingPopup();
 		loadingPopup.display();
 		HashMap<String, String> hm = new HashMap<String, String>();
@@ -454,28 +577,29 @@ public class AuditUniverseStrategicViewData {
 
 			@Override
 			public void onSuccess(final ArrayList<Strategic> result) {
-
+				ArrayList<Strategic> arrayListStrategic = sortStrategic(result);	
+				anchorAllStrategicVisibility();
 				btnAdd.setVisible(true);
-				// btnAdd.setEnabled(true);
-				// vpnlStrategic.add(new AuditUniverseStrategicViewHeading());
-				for (int i = 0; i < result.size(); i++) {
+				listAuditUniverseStrategicView = new ArrayList<AuditUniverseStrategicView>();
+				for (int i = 0; i < arrayListStrategic.size(); i++) {
 
 					final AuditUniverseStrategicView auditUniverseStrategicView = new AuditUniverseStrategicView();
-					setButtonsVisibility(result, i, auditUniverseStrategicView);
-					if (result.get(i).getPhase() != 1
-							|| result.get(i).getLoggedInUser() != result.get(i).getAssignedTo().getEmployeeId()) {
-						disablePanel(auditUniverseStrategicView, result.get(i));
+					setButtonsVisibility(arrayListStrategic, i, auditUniverseStrategicView);
+					if (arrayListStrategic.get(i).getPhase() != 1
+							|| arrayListStrategic.get(i).getLoggedInUser() != arrayListStrategic.get(i).getAssignedTo().getEmployeeId()) {
+						disablePanel(auditUniverseStrategicView, arrayListStrategic.get(i));
 					} else {
 						enablePanel(auditUniverseStrategicView);
 					}
 
-					updateFields(result, i, auditUniverseStrategicView);
+					updateFields(arrayListStrategic, i, auditUniverseStrategicView);
 					vpnlStrategic.add(auditUniverseStrategicView);
 
 					setHandlers(vpnlStrategic, hpnlButtonInitiator, hpnlButtonsApprovar, btnAdd,
-							auditUniverseStrategicView, result.get(i).getTab());
+							auditUniverseStrategicView, arrayListStrategic.get(i).getTab());
+					listAuditUniverseStrategicView.add(auditUniverseStrategicView);
 				}
-				if (result.size() > 0) {
+				if (arrayListStrategic.size() > 0) {
 					hpnlButtonInitiator.setVisible(true);
 
 				} else {
@@ -486,7 +610,67 @@ public class AuditUniverseStrategicViewData {
 			}
 		});
 	}
+	
+	private void anchorAllStrategicVisibility() {
+		if(listAllStrategicAnchors != null) {
+		listAllStrategicAnchors.get(2).setVisible(false);
+		listAllStrategicAnchors.get(1).setVisible(false);
+		listAllStrategicAnchors.get(0).setVisible(false);
+		if(listAllStrategicAnchors.size() == 3 && !listAllStrategicAnchors.isEmpty() && listAllStrategicAnchors != null) {
+			if(approveStrategic.size() > 1 && !listAllStrategicAnchors.get(2).isVisible())
+				listAllStrategicAnchors.get(2).setVisible(true);
+			if(submitStrategic.size() > 1) {
+				if(!listAllStrategicAnchors.get(1).isVisible())
+					listAllStrategicAnchors.get(1).setVisible(true);
+				if(!listAllStrategicAnchors.get(0).isVisible())
+					listAllStrategicAnchors.get(0).setVisible(true);
+				}
+			if(amendStrategic.size() > 1) {
+				if(!listAllStrategicAnchors.get(1).isVisible())
+					listAllStrategicAnchors.get(1).setVisible(true);
+				if(!listAllStrategicAnchors.get(0).isVisible())
+					listAllStrategicAnchors.get(0).setVisible(true);
+				}
+			}
+		}
+	}
 
+	private ArrayList<Strategic> sortStrategic(ArrayList<Strategic> result) {
+		approveStrategic = new ArrayList<Strategic>();
+		submitStrategic = new ArrayList<Strategic>();
+		amendStrategic = new ArrayList<Strategic>();
+		listStrategic = new ArrayList<Strategic>();
+		for(Strategic strategic : result) {
+			if(strategic.getStatus().equalsIgnoreCase("saved")) {
+				submitStrategic.add(strategic);
+			}
+			if(strategic.getStatus().equalsIgnoreCase("submitted")) {
+				approveStrategic.add(strategic);
+			}
+			if(strategic.getStatus().equalsIgnoreCase("amend")) {
+				amendStrategic.add(strategic);
+			}
+			if(strategic.getStatus().equalsIgnoreCase("initiated")) {
+				listStrategic.add(strategic);
+			}
+		}
+		ArrayList<Strategic> arrayListStrategics = new ArrayList<Strategic>();
+		if(approveStrategic != null && !approveStrategic.isEmpty()) {
+			arrayListStrategics.addAll(approveStrategic);
+		}
+		if(submitStrategic != null && !submitStrategic.isEmpty()){
+			arrayListStrategics.addAll(submitStrategic);
+		}
+		if(amendStrategic != null && !amendStrategic.isEmpty()){
+			arrayListStrategics.addAll(amendStrategic);
+		}
+		if(listStrategic != null && !listStrategic.isEmpty()){
+			arrayListStrategics.addAll(listStrategic);
+		}
+//		anchorAllStrategicVisibility();	
+		return arrayListStrategics ;
+	}
+	
 	public void fetchDepartmentsDivision(final int divisionID, final ListBox listBoxDepartments, final ArrayList<StrategicDepartments> listSelectedDepartments) {
 
 		rpcService.fetchDivisionDepartments(divisionID, new AsyncCallback<ArrayList<Department>>() {
@@ -824,6 +1008,118 @@ public class AuditUniverseStrategicViewData {
 			Button btnSave) {
 		// TODO Auto-generated method stub
 
+	}
+
+	public ArrayList<Strategic> getApproveStrategic() {
+		return approveStrategic;
+	}
+
+	public void setApproveStrategic(ArrayList<Strategic> approveStrategic) {
+		this.approveStrategic = approveStrategic;
+	}
+
+	public ArrayList<Strategic> getSubmitStrategic() {
+		return submitStrategic;
+	}
+
+	public void setSubmitStrategic(ArrayList<Strategic> submitStrategic) {
+		this.submitStrategic = submitStrategic;
+	}
+
+	public ArrayList<Strategic> getAmendStrategic() {
+		return amendStrategic;
+	}
+
+	public void setAmendStrategic(ArrayList<Strategic> amendStrategic) {
+		this.amendStrategic = amendStrategic;
+	}
+	
+	public void submitAllStrategic(VerticalPanel vpnlStrategicDataMain, HorizontalPanel hpnlButtonsInitiator,
+			HorizontalPanel hpnlButtonsApprovar, Image btnAdd, int tab) {
+		listStrategicToSaveAll = new ArrayList<Strategic>();
+		ArrayList<Strategic> arraySubmitAllStrategics = new ArrayList<Strategic>();
+		arraySubmitAllStrategics.addAll(submitStrategic);
+		arraySubmitAllStrategics.addAll(amendStrategic);
+		ArrayList<AuditUniverseStrategicView> arrayStrategicLinkedViews = getAuditUniverseIdentificationView(arraySubmitAllStrategics);
+		for(AuditUniverseStrategicView auditUniverseStrategicView : arrayStrategicLinkedViews) {
+			saveStrategicToServer(auditUniverseStrategicView, vpnlStrategicDataMain, hpnlButtonsInitiator, hpnlButtonsApprovar,
+				btnAdd, "submitAll", arraySubmitAllStrategics, tab, auditUniverseStrategicView.getBtnApprove() , false);
+		}
+		if(!listStrategicToSaveAll.isEmpty() && listStrategicToSaveAll != null) {
+			saveAllStrategicsToServerRPC(vpnlStrategicDataMain, hpnlButtonsInitiator, hpnlButtonsApprovar, btnAdd, tab, arrayStrategicLinkedViews.get(0).getBtnApprove(),
+					listStrategicToSaveAll);
+		}
+	}
+
+	public void approveAllStrategic(VerticalPanel vpnlStrategicDataMain, HorizontalPanel hpnlButtonsInitiator,
+			HorizontalPanel hpnlButtonsApprovar, Image btnAdd, int tab) {
+		listStrategicToSaveAll = new ArrayList<Strategic>();
+		ArrayList<AuditUniverseStrategicView> strategicListToApprove = getAuditUniverseIdentificationView(approveStrategic);
+		for(AuditUniverseStrategicView auditUniverseStrategicView : strategicListToApprove) {
+			saveStrategicToServer(auditUniverseStrategicView, vpnlStrategicDataMain, hpnlButtonsInitiator, hpnlButtonsApprovar,
+				btnAdd, "approveAll", approveStrategic, tab, auditUniverseStrategicView.getBtnApprove() , false);
+		}
+		if(!listStrategicToSaveAll.isEmpty() && listStrategicToSaveAll != null) {
+			saveAllStrategicsToServerRPC(vpnlStrategicDataMain, hpnlButtonsInitiator, hpnlButtonsApprovar, btnAdd, tab, strategicListToApprove.get(0).getBtnApprove(),
+					listStrategicToSaveAll);
+		}
+	}
+
+	private ArrayList<AuditUniverseStrategicView> getAuditUniverseIdentificationView(ArrayList<Strategic> strategicArrayList) {
+		ArrayList<AuditUniverseStrategicView> strategicList = new ArrayList<AuditUniverseStrategicView>();
+		for(Strategic strategic : strategicArrayList)
+		for(AuditUniverseStrategicView auditUniverseStrategicView : listAuditUniverseStrategicView ) {
+			if(strategic.getId() == auditUniverseStrategicView.getStrategicId()){
+				strategicList.add(auditUniverseStrategicView);
+			}					
+		}
+		return strategicList;			
+	}
+
+	public void saveAllStrategics(VerticalPanel vpnlStrategicDataMain, HorizontalPanel hpnlButtonsInitiator,
+			HorizontalPanel hpnlButtonsApprovar, Image btnAdd, int tab) {
+		listStrategicToSaveAll = new ArrayList<Strategic>();
+		ArrayList<Strategic> arraySubmitAllStrategics = new ArrayList<Strategic>();
+		arraySubmitAllStrategics.addAll(submitStrategic);
+		arraySubmitAllStrategics.addAll(amendStrategic);
+		ArrayList<AuditUniverseStrategicView> arrayStrategicLinkedViews = getAuditUniverseIdentificationView(arraySubmitAllStrategics);
+		for(AuditUniverseStrategicView auditUniverseStrategicView : arrayStrategicLinkedViews) {
+			saveStrategicToServer(auditUniverseStrategicView, vpnlStrategicDataMain, hpnlButtonsInitiator, hpnlButtonsApprovar,
+				btnAdd, "saveAll", arraySubmitAllStrategics, tab, auditUniverseStrategicView.getBtnApprove() , false);
+		}
+		if(!listStrategicToSaveAll.isEmpty() && listStrategicToSaveAll != null) {
+			if(checksaveAllStartegicData(arrayStrategicLinkedViews)) {
+				saveAllStrategicsToServerRPC(vpnlStrategicDataMain, hpnlButtonsInitiator, hpnlButtonsApprovar, btnAdd, tab, arrayStrategicLinkedViews.get(0).getBtnApprove(),
+					listStrategicToSaveAll);
+			}
+		}
+		else {
+			Window.alert("Unable to saveAllStrategics");
+		}
+	}
+	
+	private boolean checksaveAllStartegicData(ArrayList<AuditUniverseStrategicView> arrayStrategicLinkedViews) {
+		boolean flag = true;
+		for(AuditUniverseStrategicView strategicView : arrayStrategicLinkedViews) {
+			if (strategicView.getStrategicObjective().getText().equals("")
+					|| strategicView.getStrategicObjective().getText().equals("Enter Objective")) {
+				Window.alert("Objective name required for Job ID : " +strategicView.getStrategicId());
+				return false;
+			} 
+			else if(strategicView.getListBoxDivision().getSelectedValue() == "0") {
+				Window.alert("Please select Division for Job Objective : " + strategicView.getStrategicObjective().getText());
+				return false;
+			}
+			else if(strategicView.getListRelevantDepartment().getSelectedValue() == null) {
+					Window.alert("Please select Department(s) for Job Objective : " + strategicView.getStrategicObjective().getText());
+					return false;
+			}
+		}
+		return flag;
+	}
+
+	public void setListAnchors(ArrayList<Anchor> listAllStrategicAnchors) {
+		this.listAllStrategicAnchors = listAllStrategicAnchors;
 	}
 
 }

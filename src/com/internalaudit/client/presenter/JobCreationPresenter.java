@@ -588,7 +588,7 @@ public class JobCreationPresenter implements Presenter {
 
 			@Override
 			public void onFailure(Throwable arg0) {
-
+						Window.alert("Error in fetchResources"+ arg0);
 			}
 
 			@Override
@@ -618,7 +618,7 @@ public class JobCreationPresenter implements Presenter {
 
 			@Override
 			public void onFailure(Throwable arg0) {
-
+					Window.alert("Error in fetchJobSoftSkills"+ arg0);
 			}
 
 			@Override

@@ -10,68 +10,83 @@ import javax.persistence.Entity;
 // @Table(name = "riskfactor")
 public class SamplingExcelSheetEntity implements Serializable {
 
+	private String category;
+	private String docNo;
 	private String date;
-	private double referenceNo;
+	private String itemCode;
 	private String description;
-	private double amount;
-	private String location;
-	private String jobId;
+	private String quantity;
+	private String ucost;
+	private String transCost;
+	private String code;
+	private String name;
 	private int id;
-
+	
+	public String getQuantity() {
+		return quantity;
+	}
+	public void setQuantity(String quantity) {
+		this.quantity = quantity;
+	}
+	public String getUcost() {
+		return ucost;
+	}
+	public void setUcost(String ucost) {
+		this.ucost = ucost;
+	}
+	public String getTransCost() {
+		return transCost;
+	}
+	public void setTransCost(String transCost) {
+		this.transCost = transCost;
+	}
+	public String getCategory() {
+		return category;
+	}
+	public void setCategory(String category) {
+		this.category = category;
+	}
+	
+	public String getDocNo() {
+		return docNo;
+	}
+	public void setDocNo(String docNo) {
+		this.docNo = docNo;
+	}
+	public String getItemCode() {
+		return itemCode;
+	}
+	public void setItemCode(String itemCode) {
+		this.itemCode = itemCode;
+	}
+	public String getCode() {
+		return code;
+	}
+	public void setCode(String code) {
+		this.code = code;
+	}
 	public String getDate() {
 		return date;
 	}
-
 	public void setDate(String date) {
 		this.date = date;
 	}
-
-	public double getReferenceNo() {
-		return referenceNo;
-	}
-
-	public void setReferenceNo(double referenceNo) {
-		this.referenceNo = referenceNo;
-	}
-
 	public String getDescription() {
 		return description;
 	}
-
 	public void setDescription(String description) {
 		this.description = description;
 	}
-
-	public double getAmount() {
-		return amount;
+	public String getName() {
+		return name;
 	}
-
-	public void setAmount(double amount) {
-		this.amount = amount;
+	public void setName(String name) {
+		this.name = name;
 	}
-
-	public String getLocation() {
-		return location;
-	}
-
-	public void setLocation(String location) {
-		this.location = location;
-	}
-
-	public String getJobId() {
-		return jobId;
-	}
-
-	public void setJobId(String jobId) {
-		this.jobId = jobId;
-	}
-
 	public int getId() {
 		return id;
 	}
-
 	public void setId(int id) {
 		this.id = id;
 	}
-
 }

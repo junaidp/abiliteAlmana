@@ -5,15 +5,20 @@ import java.util.Date;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HandlerManager;
+import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FocusPanel;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
@@ -22,23 +27,35 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
+import com.internalaudit.client.InternalAuditService;
+import com.internalaudit.client.InternalAuditServiceAsync;
 import com.internalaudit.client.presenter.MainPresenter.Display;
 import com.internalaudit.client.widgets.TableauAbilite;
 import com.internalaudit.client.widgets.TableauExcel;
 import com.internalaudit.client.widgets.TableauReports;
 import com.internalaudit.shared.Employee;
+import com.sencha.gxt.core.client.util.DelayedTask;
+import com.sencha.gxt.widget.core.client.ContentPanel;
+import com.sencha.gxt.widget.core.client.Dialog;
+import com.sencha.gxt.widget.core.client.Dialog.DialogMessages;
+import com.sencha.gxt.widget.core.client.Dialog.PredefinedButton;
 import com.sencha.gxt.widget.core.client.PlainTabPanel;
 import com.sencha.gxt.widget.core.client.TabItemConfig;
+import com.sencha.gxt.widget.core.client.box.MessageBox;
+import com.sencha.gxt.widget.core.client.box.ProgressMessageBox;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
+import com.sencha.gxt.widget.core.client.container.AccordionLayoutContainer.AccordionLayoutAppearance;
 
 public class MainView extends Composite implements Display {
 
-	// private AuditPlanningView auditPlanningView ;
+	private InternalAuditServiceAsync rpcService;
 	private Employee loggedInUser;
 	private Anchor logOut = new Anchor("Logout");
 	private Anchor feedBack = new Anchor("Help/Feedback");
+	private Anchor changePassword = new Anchor("Change Password");	
 	private Anchor createCompany = new Anchor("Add Company");
 	private Anchor createUser = new Anchor("Add User");
+//	private Anchor anchorSettings = new Anchor("Settings");
 	private ListBox listYears = new ListBox();
 	private Anchor welcome = new Anchor("");
 	private VerticalPanel vpnlAuditScheduing = new VerticalPanel();
@@ -58,13 +75,14 @@ public class MainView extends Composite implements Display {
 	VerticalPanel panelImages = new VerticalPanel();
 	VerticalPanel panelSideBar = new VerticalPanel();
 
-	public MainView(Employee loggedInUser, HandlerManager eventBus) {
+	public MainView(Employee loggedInUser, HandlerManager eventBus, InternalAuditServiceAsync rpcService) {
 		// new code
 		logger.setLevel(Level.DEBUG);
 		logger.info("Signed In on from logmain view" + new Date());
 		panel.getElement().getStyle().setMarginLeft(2, Unit.PX);
 		panelImages.setWidth("110px");
 		panelImages.setHeight("200px");
+		this.rpcService = rpcService;
 		// panelImages.getElement().getStyle().setBorderStyle(BorderStyle.SOLID);
 		// panelImages.getElement().getStyle().setBorderWidth(2, Unit.PX);
 		// Button btn = new Button("Hello its visible");
@@ -94,6 +112,13 @@ public class MainView extends Composite implements Display {
 		// 2018
 		SideBarView sideBarView = new SideBarView(loggedInUser, eventBus);
 		panelSideBar.add(sideBarView);
+		sideBarView.getImgUpgrade().addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent arg0) {
+				confirmUpgradeSoftware();
+			}
+		});
 
 		FocusPanel vpTeamMgm = putImageInCard("TEAM MANAGEMENT", "team management.jpg");
 		FocusPanel vpClientMgm = putImageInCard("CLIENT MANAGEMENT", "client mang.png");
@@ -141,7 +166,7 @@ public class MainView extends Composite implements Display {
 		// imgHeader.addStyleName("w3-margin");
 		imgHeader.getElement().getStyle().setMarginBottom(10, Unit.PX);
 		VerticalPanel vp = new VerticalPanel();
-		VerticalPanel hpnl = new VerticalPanel();
+		VerticalPanel vpnl = new VerticalPanel();
 		HorizontalPanel hpnlSpace = new HorizontalPanel();
 		VerticalPanel hpnlHeader = new VerticalPanel();
 		vp.add(hpnlMain);
@@ -150,10 +175,10 @@ public class MainView extends Composite implements Display {
 		hpnlMain.add(hpnlHeader);
 		// hpnlHeader.addStyleName("blueBackground");
 		// hpnlHeader.setWidth(Window.getClientWidth()-imgHeader.getWidth()-170+"px");
-		hpnlHeader.setWidth("1000px");
+		hpnlHeader.setWidth("1050px");
 		hpnlHeader.setHeight("91px");
 		hpnlHeader.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
-		hpnl.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+		vpnl.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 
 		// SelectionHandler<Widget> handler = new SelectionHandler<Widget>() {
 		// @Override
@@ -201,7 +226,7 @@ public class MainView extends Composite implements Display {
 		// 2018 if(loggedInUser.getEmployeeId().getUserId().getUserId() == 1){
 		// addTableauTabs();
 		// }
-		if (loggedInUser.getEmployeeId() == 1) {
+		if (loggedInUser.getEmployeeId() == 1 && loggedInUser.getEmployeeName().contains("Faheem")) {
 			addTableauTabs();
 		}
 
@@ -222,15 +247,25 @@ public class MainView extends Composite implements Display {
 
 		panelBar.addStyleName("w3-bar-block w3-border w3-light-blue");
 		// vpnlTabPanel.getElement().getStyle().setPaddingLeft(12, Unit.PX);
-		hpnl.setWidth("0%");
+
 		vpnlTabPanel.add(checkpanel);
 		// vpnlTabPanel.add(panelImages);
 		// selectYear().addStyleName("w3-bar-item w3-right");
-		hpnl.add(selectYear());
-		hpnl.add(welcome);
+
+		VerticalPanel vpnlLogo = new VerticalPanel();
+		Image imgLogo = new Image("images/AGH-logo.jpg");
+//		Image imgLogo = new Image("images/logo/hyphenlogo.png");
+		imgLogo.setSize("240px", "60px");	
+		vpnlLogo.add(imgLogo);
+		
+		vpnl.add(vpnlLogo);
+		vpnl.add(selectYear());
+		vpnl.add(welcome);
 		// hpnl.add(panelBar);
 		// panelBar.add(welcome);
 		panelBar.add(feedBack);
+//		panelBar.add(anchorSettings); 
+		panelBar.add(changePassword);
 		panelBar.add(logOut);
 		// hpnl.add(welcome); // Welcome <name>
 		// welcome.addStyleName("white");
@@ -250,24 +285,63 @@ public class MainView extends Composite implements Display {
 		welcome.setWordWrap(false);
 		hpnlHeader.add(hpnlSpace);
 		hpnlSpace.setWidth("65%");
-		hpnlHeader.add(hpnl);
+		hpnlHeader.add(vpnl);
+		//2020 hamza cmnt
 		if (loggedInUser.getEmployeeName().equalsIgnoreCase("Muhammad Faheem Piracha")
 				&& loggedInUser.getEmployeeId() == 1) {
-			hpnl.add(createCompany);
-			hpnl.add(createUser);
-
+			vpnl.add(createCompany);
+			vpnl.add(createUser);
+			
 		}
 		logOut.addStyleName("white");
 		feedBack.addStyleName("white");
 		feedBack.addStyleName("  w3-bar-item w3-hover-blue w3-right");
 		logOut.addStyleName(" w3-bar-item w3-hover-blue w3-right");
-		hpnl.setSpacing(2);
-		hpnl.setWidth("0%");
-		hpnl.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+		changePassword.addStyleName("white w3-bar-item w3-hover-blue w3-right");
+//		anchorSettings.addStyleName("white w3-bar-item w3-hover-blue w3-right");
+		vpnl.setSpacing(2);
+		vpnl.setWidth("0%");
+		vpnl.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 
 		initWidget(vp);
 	}
+		
+	private void confirmUpgradeSoftware() {
+		boolean confirm = Window.confirm("This will install the upgraded version of abilite, you want to continue ?");
+		if(confirm)
+			upgradeSoftware();
+	}
+	
+	private void upgradeSoftware() {
+		progressUpgradeSoftware();
+		final ProgressMessageBox p = new ProgressMessageBox("Updating project", "Please Wait ..");
+		p.getButton(PredefinedButton.OK).setVisible(false);
+		p.show();
+		rpcService.upgradeSoftware(new AsyncCallback<String>() {
 
+			@Override
+			public void onFailure(Throwable arg0) {
+				Window.alert("Unable to upgrade software");
+			}
+
+			@Override
+			public void onSuccess(String arg0) {
+				final DelayedTask d = new DelayedTask() {
+				    @Override
+				    public void onExecute() {
+				        p.hide();
+				    	History.newItem("login");
+				    }
+				};
+				d.delay(20000);
+			}
+		}); 
+	}
+	
+	private void progressUpgradeSoftware() { 
+		
+	}
+	
 	private FocusPanel putImageInCard(String lblName, String imgSource) {
 		Label lbl = new Label(lblName);
 		lbl.setWidth("125px");
@@ -328,6 +402,7 @@ public class MainView extends Composite implements Display {
 		listYears.addStyleName("yearList");
 		vpnlYear.add(listYears);
 		hpnlYear.add(vpnlYear);
+		hpnlYear.getElement().getStyle().setPaddingTop(10, Unit.PX);
 		hpnlYear.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		vpnlYear.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 
@@ -462,4 +537,19 @@ public class MainView extends Composite implements Display {
 		return followUpView;
 	}
 
+	public Anchor getChangePassword() {
+		return changePassword;
+	}
+
+	public void setChangePassword(Anchor changePassword) {
+		this.changePassword = changePassword;
+	}
+
+//	public Anchor getAnchorSettings() {
+//		return anchorSettings;
+//	}
+//
+//	public void setAnchorSettings(Anchor anchorSettings) {
+//		this.anchorSettings = anchorSettings;
+//	}
 }

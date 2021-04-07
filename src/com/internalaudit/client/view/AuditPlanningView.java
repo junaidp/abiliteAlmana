@@ -47,7 +47,7 @@ public class AuditPlanningView extends Composite {
 			cp.setHeadingText("Audit Universe Identification");
 			cp.setAnimCollapse(true);
 			cp.setExpanded(true);
-			cp.add(new AuditUniverseIdentificationView(cp));
+			cp.add(new AuditUniverseIdentificationView(cp, loggedInUser));
 			// VerticalPanel vpnlIdentification = new VerticalPanel();
 			// vpnlIdentification.setHeight("400px");
 			// vpnlIdentification.add(new AuditUniverseIdentificationView(cp));

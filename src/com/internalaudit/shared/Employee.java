@@ -76,6 +76,17 @@ public class Employee implements Serializable {
 	@Column(name = "otherskill")
 	private String otherskill;
 
+	@Column(name = "status")
+	private int status;
+	
+	public int getStatus() {
+		return status;
+	}
+
+	public void setStatus(int status) {
+		this.status = status;
+	}
+
 	@Transient
 	private ArrayList<ToDo> todos;
 

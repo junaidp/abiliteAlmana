@@ -109,6 +109,9 @@ public class Exceptions implements Serializable {
 
 	@Transient
 	private ArrayList<Recommendation> recommendation;
+	
+	@Transient
+	private AuditEngagement auditEngagement;
 
 	public int getExceptionId() {
 		return exceptionId;
@@ -316,6 +319,14 @@ public class Exceptions implements Serializable {
 
 	public void setRecommendation(ArrayList<Recommendation> recommendation) {
 		this.recommendation = recommendation;
+	}
+
+	public AuditEngagement getAuditEngagement() {
+		return auditEngagement;
+	}
+
+	public void setAuditEngagement(AuditEngagement auditEngagement) {
+		this.auditEngagement = auditEngagement;
 	}
 
 }

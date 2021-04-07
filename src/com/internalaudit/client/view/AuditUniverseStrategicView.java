@@ -1,9 +1,14 @@
 package com.internalaudit.client.view;
 
+import java.util.ArrayList;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -11,12 +16,12 @@ import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.ScrollPanel;
+import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.internalaudit.client.view.data.AuditUniverseStrategicViewData;
 import com.sencha.gxt.widget.core.client.button.IconButton;
 import com.sencha.gxt.widget.core.client.form.DateField;
-import com.sencha.gxt.widget.core.client.form.TextField;
 
 public class AuditUniverseStrategicView extends Composite {
 
@@ -32,7 +37,7 @@ public class AuditUniverseStrategicView extends Composite {
 	private ListBox lstObjectiveOwner = new ListBox();
 	private ListBox listRelevantDepartment = new ListBox();
 	private DateField objectiveAchievementDate = new DateField();
-	private TextField strategicObjective = new TextField();
+	private TextArea strategicObjective = new TextArea();
 	private Label feedback = new Label(" Feedback ");
 	private Image submitted = new Image(" images/tick.png ");
 
@@ -65,10 +70,10 @@ public class AuditUniverseStrategicView extends Composite {
 	}
 
 	private void mainPanelLayout() {
-	strategicObjective.setEmptyText("Enter Objective");
-	listBoxDivision.setWidth("190px");
-	listRelevantDepartment.setWidth("180px");
-	strategicObjective.setWidth("610px");
+	strategicObjective.getElement().setPropertyString("placeholder","Enter Objective");
+	listBoxDivision.setWidth("230px");
+	listRelevantDepartment.setWidth("240px");
+	strategicObjective.setSize("600px", "50px");
 	VerticalPanel vpnlStrategicId = new VerticalPanel();
 	VerticalPanel vpnlStrategicObjective = new VerticalPanel();
 	//vpnlStrategicObjective.setWidth("805px");
@@ -116,7 +121,7 @@ public class AuditUniverseStrategicView extends Composite {
 	hpnlStrategic.add(vpnlStrategicObjective);
 	HorizontalPanel hpnlComments = new HorizontalPanel();
 
-	hpnlComments.setWidth("125px");
+	hpnlComments.setWidth("25px");
 	hpnlComments.add(feedback);
 	feedback.getElement().getStyle().setMarginLeft(25, Unit.PX);
 	hpnlComments.add(submitted);
@@ -153,6 +158,13 @@ public class AuditUniverseStrategicView extends Composite {
 	hpnlButtonInitiator.setSpacing(2);
 	hpnlStrategic.setWidth("900px");
 	mainPanel.addStyleName("form-row");
+	}
+	
+	public void clearStrategicView() {
+		strategicObjective.setText("");
+		strategicObjective.setText("");
+		listBoxDivision.clear();
+		listRelevantDepartment.clear();
 	}
 
 	public IconButton getBtnAdd() {
@@ -203,11 +215,11 @@ public class AuditUniverseStrategicView extends Composite {
 		this.objectiveAchievementDate = objectiveAchievementDate;
 	}
 
-	public TextField getStrategicObjective() {
+	public TextArea getStrategicObjective() {
 		return strategicObjective;
 	}
 
-	public void setStrategicObjective(TextField strategicObjective) {
+	public void setStrategicObjective(TextArea strategicObjective) {
 		this.strategicObjective = strategicObjective;
 	}
 

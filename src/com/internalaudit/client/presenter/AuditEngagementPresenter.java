@@ -271,6 +271,8 @@ public class AuditEngagementPresenter implements Presenter {
 				records.setWidget(i + 1, 2, startDate);
 
 				Label status = new Label(allJobsAndStatus.get(i).getJobStatus());
+				if(allJobsAndStatus.get(i).getJobCreation().getReportStatus() == 5)
+					status.setText("Completed");
 				status.setWidth("76px");
 				status.getElement().getStyle().setPaddingLeft(6, Unit.PX);
 				startDate.addStyleName("statusJobStatus");

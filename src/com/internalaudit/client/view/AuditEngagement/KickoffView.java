@@ -76,11 +76,13 @@ public class KickoffView extends Composite {
 
 	@UiField
 	Label lblSubProcess;
+	
 	@UiField
 	Label lblJobType;
+	
 	@UiField
 	VerticalPanel vpnlSubProcess;
-
+	private String userPackage;
 	private Employee loggedInUser;
 	private ContentPanel panel;
 	private InternalAuditServiceAsync rpcService;
@@ -110,7 +112,7 @@ public class KickoffView extends Composite {
 
 		getExceptions();
 		// added button click just to check test the view
-
+		fetchCompanyPackage(loggedInUser.getCompanyId());
 	}
 
 	private void updateKickoffStatus(int auditEngId) {
@@ -261,7 +263,7 @@ public class KickoffView extends Composite {
 		});
 	}
 
-	private void showOptionsAccordian(final AuditEngagement record) {
+	private void showOptionsAccordian(final AuditEngagement record) { 
 		panel = new ContentPanel();
 		panel.setHeaderVisible(false);
 
@@ -366,7 +368,7 @@ public class KickoffView extends Composite {
 //		});
 
 		final VerticalPanel auditWorkNewContainer = new VerticalPanel();
-		final AuditWorkProg auditWorkProg = new AuditWorkProg(rpcService, selectedJobId, loggedInUser, record.getEngagementDTO().getSelectedControls(), auditWorkNewContainer, refreshMethod(con), vpnlPopup, record.getEngagementDTO().getAuditProgrammeList().size());
+		final AuditWorkProg auditWorkProg = new AuditWorkProg(rpcService, selectedJobId, loggedInUser, userPackage, record.getEngagementDTO().getSelectedControls(), auditWorkNewContainer, refreshMethod(con), vpnlPopup, record.getEngagementDTO().getAuditProgrammeList().size());
 		vpnl.add(auditWorkProg);
 
 		// AddIcon btnAddAuditWork = new AddIcon();
@@ -391,8 +393,7 @@ public class KickoffView extends Composite {
 			}
 			if(isAddInLibrary)
 				viewAuditParogramsLibrary(vpnl, vpnlPopup, auditWorkNewContainer, auditWorkProg, auditParogramsLibrary);
-		}
-
+		} 
 		// addclickhandler of button risk
 		// btnAddAuditWork.addClickHandler(new ClickHandler() {
 		//
@@ -502,10 +503,10 @@ public class KickoffView extends Composite {
 		//vpExistingControl.add(btnLibrary);
 		
 		// user's
-				final RisksView riskView = new RisksView(auditEngId, rpcService, loggedInUser,
+		final RisksView riskView = new RisksView(auditEngId, rpcService, loggedInUser, userPackage,
 						record.getEngagementDTO().getSelectedObjectiveRisks(), vpExistingControlContainer, refreshMethod(con), record.getEngagementDTO().getSuggestedControlsList().size());
-				userRiskControlContainer.add(riskView);
-			riskView.showhideSaveSubmitButtons(false);
+			userRiskControlContainer.add(riskView);
+			riskView.showhideSaveSubmitButtons(false); 
 
 		ArrayList<Integer> riskIds = new ArrayList<Integer>();
 		//check is added below by moqeet, selected objectivs not added again in library
@@ -574,8 +575,7 @@ public class KickoffView extends Composite {
 		// cp.add(panelAdd);
 		cp.add(vpExistingControl);
 
-		con.add(cp);
-
+		con.add(cp); 
 		/*
 		 * btnSaveControl.addClickHandler(new ClickHandler(){
 		 * 
@@ -653,6 +653,7 @@ public class KickoffView extends Composite {
 
 		HorizontalPanel hpnlTopAdd = new HorizontalPanel();
 		verticalPanelKeyRisks.add(hpnlTopAdd);
+		hpnlTopAdd.getElement().getStyle().setMarginTop(5, Unit.PX);
 		
 		// User's LIBRARY Selected
 		for (int j = 0; j < record.getEngagementDTO().getSelectedObjectiveRisks().size(); j++) {
@@ -661,12 +662,16 @@ public class KickoffView extends Composite {
 			hpnlButton.setVisible(true);
 			final RiskObjective objectiveRisk = record.getEngagementDTO().getSelectedObjectiveRisks().get(j);
 			keyRiskView.setData(objectiveRisk);
-			if (record.getEngagementDTO().getSelectedObjectiveRisks().get(j).getStatus() == InternalAuditConstants.SUBMIT
+			if ((record.getEngagementDTO().getSelectedObjectiveRisks().get(j).getStatus() == InternalAuditConstants.SUBMIT)
 					&& record.getEngagementDTO().getStatusControlRisk() != InternalAuditConstants.REJECTED) {
 				keyRiskView.disable();
 				hpnlButton.setVisible(false);
 				btnAdd.setVisible(false);
 			}
+			
+
+//			if(record.getEngagementDTO().getStatusControlRisk() == InternalAuditConstants.REJECTED)
+//				btnSubmitKeyRisk.setVisible(false);
 			
 			keyRiskView.getDelete().addClickHandler(new ClickHandler() {
 
@@ -709,7 +714,14 @@ public class KickoffView extends Composite {
 				viewLibraryKeyRisks(verticalPanelKeyRisksContainer, usersRisksContainer, hpnlButton, riskObjectivesLibrary);
 			}
 		}
-
+  
+		if(userPackage.equalsIgnoreCase("Basic") || userPackage.equalsIgnoreCase("Gold")) {
+			btnLibraryKeyRisk.setVisible(false); 
+			btnAdd.getElement().getStyle().setMarginLeft(1150, Unit.PX);
+		  }
+		  else
+			  btnAdd.getElement().getStyle().setMarginLeft(1050, Unit.PX);
+		
 		btnAdd.addClickHandler(new ClickHandler() {
 
 			@Override
@@ -734,8 +746,7 @@ public class KickoffView extends Composite {
 
 			}
 		});
-		hpnlTopAdd.add(btnAdd);
-		btnAdd.getElement().getStyle().setMarginLeft(1050, Unit.PX);
+		hpnlTopAdd.add(btnAdd); 
 		verticalPanelKeyRisks.add(usersRisksContainer);
 		btnLibraryKeyRisk.addClickHandler(new ClickHandler() {
 
@@ -786,15 +797,7 @@ public class KickoffView extends Composite {
 
 			@Override
 			public void onClick(ClickEvent event) {
-				ArrayList<RiskObjective> riskObjectives = new ArrayList<RiskObjective>();
-				for (int i = 0; i < usersRisksContainer.getWidgetCount(); i++) {
-					KeyRiskViewNew keyRiskView = (KeyRiskViewNew) usersRisksContainer.getWidget(i);
-					RiskObjective riskObjective = new RiskObjective();
-					keyRiskView.getData(riskObjective);
-					riskObjectives.add(riskObjective);
-				}
-				saveRiskObjectives(riskObjectives, InternalAuditConstants.SAVED, con);
-
+				setkeyRisksToSave(con, usersRisksContainer, InternalAuditConstants.SAVED);
 			}
 		});
 
@@ -802,17 +805,44 @@ public class KickoffView extends Composite {
 
 			@Override
 			public void onClick(ClickEvent event) {
-				ArrayList<RiskObjective> riskObjectives = new ArrayList<RiskObjective>();
-				for (int i = 0; i < usersRisksContainer.getWidgetCount(); i++) {
-					KeyRiskViewNew keyRiskView = (KeyRiskViewNew) usersRisksContainer.getWidget(i);
-					RiskObjective riskObjective = new RiskObjective();
-					keyRiskView.getData(riskObjective);
-					riskObjectives.add(riskObjective);
-				}
-				saveRiskObjectives(riskObjectives, InternalAuditConstants.SUBMIT, con);
-
+				setkeyRisksToSave(con, usersRisksContainer, InternalAuditConstants.SUBMIT);
 			}
 		});
+	}
+	
+	private boolean txtRiskValidation(VerticalPanel usersRisksContainer) {
+		boolean flag = false;
+		for (int i = 0; i < usersRisksContainer.getWidgetCount(); i++) {
+			KeyRiskViewNew keyRiskView = (KeyRiskViewNew) usersRisksContainer.getWidget(i);
+			if(keyRiskView.getTxtRisk().getText().length() > 0)
+				flag = true;
+			else
+				flag = false;
+		}
+		return flag;
+	}
+
+	private void setkeyRisksToSave(final AccordionLayoutContainer con, final VerticalPanel usersRisksContainer, int action) {
+		if(txtRiskValidation(usersRisksContainer)) {
+			ArrayList<RiskObjective> riskObjectives = new ArrayList<RiskObjective>();
+			for (int i = 0; i < usersRisksContainer.getWidgetCount(); i++) {
+				KeyRiskViewNew keyRiskView = (KeyRiskViewNew) usersRisksContainer.getWidget(i);
+				RiskObjective riskObjective = new RiskObjective();
+				keyRiskView.getData(riskObjective);
+				riskObjectives.add(riskObjective);
+			}
+			if(action == InternalAuditConstants.SUBMIT) {
+				boolean confirm =  Window.confirm("Do you want to submit the \"Key Risks\"\n" + 
+						"Note: After submission you will not be able to make changes.");
+				if(confirm) {
+					saveRiskObjectives(riskObjectives, InternalAuditConstants.SUBMIT, con);
+				}
+			}
+			else
+				saveRiskObjectives(riskObjectives, InternalAuditConstants.SAVED, con);
+		}
+		else
+			Window.alert("Enter some text in 'Risk'");
 	}
 
 	private void viewLibraryKeyRisks(final VerticalPanel verticalPanelKeyRisksContainer,
@@ -893,7 +923,6 @@ public class KickoffView extends Composite {
 		vpnlActicityObjective.setHeight("370px");
 
 		AddImage btnAddAcitivityObjective = new AddImage();
-		btnAddAcitivityObjective.getElement().getStyle().setMarginLeft(1050, Unit.PX);
 
 		final HorizontalPanel hpnlButtons = new HorizontalPanel();
 		hpnlButtons.add(btnSaveActicityObjective);
@@ -908,13 +937,27 @@ public class KickoffView extends Composite {
 			activityObjectiveView.getDelete().setVisible(true);
 			hpnlButtons.setVisible(true);
 			activityObjectiveView.setData(record.getEngagementDTO().getSelectedActivityObjectives().get(j));
-			if (record.getEngagementDTO().getSelectedActivityObjectives().get(j).getStatus() == InternalAuditConstants.SUBMIT
-					&& record.getEngagementDTO().getStatusControlRisk() != InternalAuditConstants.REJECTED) {
-				activityObjectiveView.disable();
-				btnSaveActicityObjective.setVisible(false);
-				btnAddAcitivityObjective.setVisible(false);
-				btnSubmitActicityObjective.setVisible(false);
-			}
+			if(record.getEngagementDTO().getSelectedActivityObjectives() != null && (!record.getEngagementDTO().getSelectedActivityObjectives().isEmpty())) {	
+				boolean confirm = record.getEngagementDTO().getSelectedActivityObjectives().get(j).getStatus() == InternalAuditConstants.SUBMIT && 
+						record.getEngagementDTO().getStatusControlRisk() != InternalAuditConstants.REJECTED;
+				if (confirm) {
+					activityObjectiveView.disable();
+					btnSaveActicityObjective.setVisible(false);
+					btnAddAcitivityObjective.setVisible(false);
+					btnSubmitActicityObjective.setVisible(false);
+				}
+		}
+//			if(record.getEngagementDTO().getStatusControlRisk() == InternalAuditConstants.REJECTED)
+//				btnSubmitActicityObjective.setVisible(false);
+//			if(record.getEngagementDTO().getSelectedObjectiveRisks().size() > 0) {
+//				if(record.getEngagementDTO().getSelectedObjectiveRisks().get(j).getStatus() == InternalAuditConstants.SUBMIT
+//						&& record.getEngagementDTO().getStatusControlRisk() != InternalAuditConstants.REJECTED) {
+//					activityObjectiveView.disable();
+//					btnSaveActicityObjective.setVisible(false);
+//					btnAddAcitivityObjective.setVisible(false);
+//					btnSubmitActicityObjective.setVisible(false);
+//				}
+//			}
 			
 			activityObjectiveView.getDelete().addClickHandler(new ClickHandler() {
 
@@ -940,7 +983,7 @@ public class KickoffView extends Composite {
 		btnLibrary.setWidth("100px");
 		// lblLibHeading.addStyleName("libraryText");
 		if(record.getEngagementDTO().getStatusControlRisk() == InternalAuditConstants.REJECTED)
-			hpnlButtons.setVisible(true);
+			hpnlButtons.setVisible(true); 
 		else
 			btnLibrary.setVisible(false);
 		if (record.getEngagementDTO().getSelectedActivityObjectives().size() <= 0 || record.getEngagementDTO()
@@ -959,9 +1002,16 @@ public class KickoffView extends Composite {
 				 if(isAddInLibrary)
 					viewObjectivesLibraryList(activityObjectiveLibrary, vpnlActicityObjectiveContainer, usersActivityContainer, hpnlButtons);				
 		}
-	}
-
-		btnAddAcitivityObjective.addClickHandler(new ClickHandler() {
+	} 
+		
+		  if(userPackage.equalsIgnoreCase("Basic") || userPackage.equalsIgnoreCase("Gold")) {
+			btnLibrary.setVisible(false); 
+			btnAddAcitivityObjective.getElement().getStyle().setMarginLeft(1150, Unit.PX);
+		  }
+		  else
+			  btnAddAcitivityObjective.getElement().getStyle().setMarginLeft(1050, Unit.PX);
+		
+	    btnAddAcitivityObjective.addClickHandler(new ClickHandler() {
 
 			@Override
 			public void onClick(ClickEvent event) {
@@ -991,9 +1041,10 @@ public class KickoffView extends Composite {
 			@Override
 			public void onClick(ClickEvent event) {
 				// con.clear();
-
-				saveActivityObjective(usersActivityContainer, InternalAuditConstants.SAVED, con);
-
+				if(txtValidationObjectivesTab(usersActivityContainer))
+					saveActivityObjective(usersActivityContainer, InternalAuditConstants.SAVED, con);
+				else
+					Window.alert("Enter some text in 'Activity Objective'");
 			}
 		});
 
@@ -1001,7 +1052,14 @@ public class KickoffView extends Composite {
 
 			@Override
 			public void onClick(ClickEvent event) {
-				saveActivityObjective(usersActivityContainer, InternalAuditConstants.SUBMIT, con);
+				boolean confirm = Window.confirm("Do you want to submit the \"Activity Objective\"\n" + 
+						"Note: After submission you will not be able to make changes.");
+				if(confirm) {
+					if(txtValidationObjectivesTab(usersActivityContainer))
+						saveActivityObjective(usersActivityContainer, InternalAuditConstants.SUBMIT, con);
+					else
+						Window.alert("Enter some text in 'Activity Objective'");
+				}
 			}
 		});
 		HorizontalPanel hpnlBtnHeader = new HorizontalPanel();
@@ -1053,6 +1111,19 @@ public class KickoffView extends Composite {
 		cp.add(scrollMain);
 		con.add(cp);
 
+	}
+
+	private boolean txtValidationObjectivesTab(VerticalPanel usersActivityContainer) {
+		 boolean flag = false;
+		for (int i = 0; i < usersActivityContainer.getWidgetCount(); i++) {
+			ActivityObjectiveViewNew activityObjectiveView = (ActivityObjectiveViewNew) usersActivityContainer
+					.getWidget(i);
+			if(activityObjectiveView.getTxtAreaActivityObj().getText().length() > 0)
+				flag = true;
+			else
+				flag = false;
+		}
+		return flag;
 	}
 
 	private void viewObjectivesLibraryList(final ActivityObjective activityObjectiveLibrary, final VerticalPanel vpnlActicityObjectiveContainer,
@@ -1221,6 +1292,22 @@ public class KickoffView extends Composite {
 				con.clear();
 				showOptionsAccordian(result);
 
+			}
+		});
+	}
+	
+	private void fetchCompanyPackage(int companyId) {
+		rpcService.fetchCompanyPackage(companyId, new AsyncCallback<String>() {
+
+			@Override
+			public void onFailure(Throwable caught) {
+				Window.alert("Failed fetchCompanyPackage:" + caught.getLocalizedMessage());
+			}
+
+			@Override
+			public void onSuccess(String companyPackage) {
+				// TODO Auto-generated method stub
+				userPackage = companyPackage;   
 			}
 		});
 	}

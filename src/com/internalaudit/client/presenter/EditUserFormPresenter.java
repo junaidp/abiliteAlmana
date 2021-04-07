@@ -30,6 +30,7 @@ import com.internalaudit.shared.Employee;
 import com.internalaudit.shared.InternalAuditConstants;
 import com.internalaudit.shared.RollsEnum;
 import com.internalaudit.shared.Skills;
+import com.sencha.gxt.widget.core.client.form.PasswordField;
 
 public class EditUserFormPresenter implements Presenter
 
@@ -65,6 +66,8 @@ public class EditUserFormPresenter implements Presenter
 		ButtonRound getBtnCancel();
 
 		ButtonRound getBtnSubmit();
+		
+		ButtonRound getBtnDelete();
 
 		// TextBox getTxtEmail();
 		ListBox getListReportingTo();
@@ -195,6 +198,7 @@ public class EditUserFormPresenter implements Presenter
 		// display.getListuserProfile().addItem(InternalAuditConstants.AUDITOR);
 		// display.getListuserProfile().addItem(InternalAuditConstants.ADMIN);
 
+		
 		display.getListEmployees().addChangeHandler(new ChangeHandler() {
 
 			@Override
@@ -206,6 +210,21 @@ public class EditUserFormPresenter implements Presenter
 		}
 
 		);
+		
+		display.getBtnDelete().addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent arg0) {
+				
+				int selectedEmployeeId = Integer.parseInt(display.getListEmployees().getValue(display.getListEmployees().getSelectedIndex()));
+				boolean confirm = Window.confirm("Are you sure to want wo delete user   " +display.getListEmployees().getSelectedItemText());
+				if (confirm) {
+					deleteEmployee(selectedEmployeeId);
+				}
+				
+			}
+
+		});
 
 		display.getListuserProfile().addChangeHandler(new ChangeHandler() {
 
@@ -271,7 +290,6 @@ public class EditUserFormPresenter implements Presenter
 	}
 
 	private void fetchSelectedEmployee(int selectedUserId) {
-
 		rpcService.fetchSelectedEmployee(selectedUserId, new AsyncCallback<Employee>() {
 
 			@Override
@@ -288,6 +306,8 @@ public class EditUserFormPresenter implements Presenter
 	}
 
 	private void displayUser(final Employee employee) {
+		
+		populateSelectedEmployeeForm(employee);
 
 		rpcService.fetchNumberOfDaysBetweenTwoDates(display.getDateAvailabilityForm().getValue(),
 				display.getDateAvailabalityTo().getValue(), new AsyncCallback<Integer>() {
@@ -305,6 +325,15 @@ public class EditUserFormPresenter implements Presenter
 
 				});
 
+	}
+
+	private void populateSelectedEmployeeForm(final Employee employee) {
+		display.getTxtName().setText(employee.getEmployeeName());
+		display.getTxtUserName().setText(employee.getEmail());
+		display.getTxtPassword().setText(employee.getPassword());
+		display.getTxtDesignation().setText(employee.getDesignation());
+		display.getTxtPassword().getElement().setAttribute("type", "text");
+		display.getDateOfJoining().setValue(employee.getDateOfJoining());
 	}
 
 	private void displayUser() {
@@ -411,6 +440,26 @@ public class EditUserFormPresenter implements Presenter
 		});
 	}
 
+	private void deleteEmployee(int selectedEmployeeId) {
+		rpcService.deleteEmployee(selectedEmployeeId, new AsyncCallback<String>() {
+
+			@Override
+			public void onFailure(Throwable arg0) {
+				new DisplayAlert("Exception occured in delete user" +arg0.getLocalizedMessage());
+				
+			}
+
+			@Override
+			public void onSuccess(String result) {
+				new DisplayAlert(result);
+				clearFields();
+				display.getListEmployees().clear();
+				fetchEmployees();
+				
+			}
+		});
+	}
+	
 	private void clearFields() {
 		display.getTxtDesignation().setText("");
 		// display.getTxtEmail().setText("");

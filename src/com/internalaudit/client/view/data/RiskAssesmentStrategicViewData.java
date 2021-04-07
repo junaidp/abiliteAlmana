@@ -15,12 +15,14 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DecoratedPopupPanel;
+import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 import com.internalaudit.client.InternalAuditService;
 import com.internalaudit.client.InternalAuditServiceAsync;
 import com.internalaudit.client.view.AmendmentPopup;
@@ -34,8 +36,11 @@ import com.internalaudit.client.view.RiskFactorsView;
 import com.internalaudit.shared.RiskAssesmentDTO;
 import com.internalaudit.shared.RiskFactor;
 import com.internalaudit.shared.Strategic;
+import com.internalaudit.shared.StrategicDepartments;
 import com.internalaudit.shared.StrategicRisk;
 import com.internalaudit.shared.TimeOutException;
+import com.sencha.gxt.core.client.dom.ScrollSupport.ScrollMode;
+import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
 
 public class RiskAssesmentStrategicViewData {
 
@@ -260,6 +265,7 @@ public class RiskAssesmentStrategicViewData {
 					treeItem.addItem(riskAssesmentStrategicView);
 
 					final ArrayList<RiskFactorsView> riskFactorsUpdated = new ArrayList<RiskFactorsView>();
+					riskAssesmentStrategicView.getRiskFactors().add(selectedDivisionDepartmentView(riskAssesmentDTOs.get(index).getStrategic()));
 					riskAssesmentStrategicView.getRiskFactors().add(new RiskFactorHeadingView());
 					for (int j = 0; j < riskFactors.size(); j++) {
 						RiskFactorsView riskFactorsView = new RiskFactorsView();
@@ -357,6 +363,36 @@ public class RiskAssesmentStrategicViewData {
 				loadingPopup.remove();
 			}
 		});
+	}
+
+	private HorizontalPanel selectedDivisionDepartmentView(Strategic strategic) {
+		HorizontalPanel hpnl = new HorizontalPanel();
+		Label lblDivision = new Label("Division:");
+		Label lblDepartments = new Label("Departments:");
+		lblDivision.addStyleName("blue");
+		lblDepartments.addStyleName("blue");
+		lblDivision.setWidth("75px");
+		lblDepartments.setWidth("100px");
+		
+		Label lblDivisionName = new Label(strategic.getDivision().getDivisionName());
+		lblDivisionName.setWidth("300px");
+		hpnl.add(lblDivision);
+		hpnl.add(lblDivisionName);
+		
+		VerticalLayoutContainer vpnlDepartments = new VerticalLayoutContainer();
+		vpnlDepartments.setSize("300px", "50px");
+		vpnlDepartments.setScrollMode(ScrollMode.AUTO);
+		for(StrategicDepartments departments : strategic.getStrategicDepartments()) {
+			Label lblDepartmentName = new Label(departments.getDepartment().getDepartmentName());
+			lblDepartmentName.setWidth("250px");
+			lblDepartmentName.setWordWrap(false);
+			vpnlDepartments.add(lblDepartmentName);
+		}
+		
+		hpnl.add(lblDepartments);
+		hpnl.add(vpnlDepartments);
+		
+		return hpnl;
 	}
 
 	private void setHandlers(final RiskAssesmentView riskAssesmentView,

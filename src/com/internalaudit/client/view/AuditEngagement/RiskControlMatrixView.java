@@ -211,7 +211,7 @@ public class RiskControlMatrixView extends VerticalPanel {
 			if (listBoxRisk.getValue(i).equals(controlView.getListBoxRisk().getSelectedValue())) {
 				listBoxRisk.setSelectedIndex(i);
 				break;
-			}
+			}			
 		}
 		setImage(Integer.parseInt(listBoxInherintRating.getValue(listBoxInherintRating.getSelectedIndex())), imgRating);
 		setImage(Integer.parseInt(listBoxControlRating.getValue(listBoxControlRating.getSelectedIndex())),
@@ -403,7 +403,7 @@ public class RiskControlMatrixView extends VerticalPanel {
 
 	public void enableFields() {
 
-		listBoxInherintRating.setEnabled(true);
+//		listBoxInherintRating.setEnabled(true); //commented by Moqeet
 		listBoxControlRating.setEnabled(true);
 		txtAreaControl.setEnabled(true);
 		listBoxRisk.setVisible(true);

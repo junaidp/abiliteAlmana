@@ -23,6 +23,14 @@ public class PopupsView {
 		return hpnlSPace;
 	}
 
+	public Button getBtnClose() {
+		return btnClose;
+	}
+
+	public void setBtnClose(Button btnClose) {
+		this.btnClose = btnClose;
+	}
+
 	public void setHpnlSPace(HorizontalPanel hpnlSPace) {
 		this.hpnlSPace = hpnlSPace;
 	}
@@ -101,7 +109,7 @@ public class PopupsView {
 		btnClose.setVisible(false);
 	}
 	
-	private void closePopUp() {
+	public void closePopUp() {
 		popup.removeFromParent();
 		vpnlMain.removeFromParent();
 		hpnlSPace.removeFromParent();

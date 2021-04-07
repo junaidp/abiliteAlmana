@@ -26,8 +26,8 @@ public class UserInductionFormView extends FlexTable implements Display {
 	private DateBox dateAvailabalityTo = new DateBox();
 	private ListBox listSkillSet = new ListBox();
 	private ButtonRound btnCancel = new ButtonRound("Back");
-	private ButtonRound btnEdit = new ButtonRound("Edit");
-	private ButtonRound btnSubmit = new ButtonRound("Save");
+	private ButtonRound btnEdit = new ButtonRound("Edit User");
+	private ButtonRound btnSubmit = new ButtonRound("Save User");
 	// private TextBox txtEmail = new TextBox();
 	private ListBox listReportingTo = new ListBox();
 	private Label lblReportingTo = new Label("Reporting to");
@@ -43,6 +43,7 @@ public class UserInductionFormView extends FlexTable implements Display {
 	private Label lblUserNameError = new Label("Please enter valid Email Address");
 	private Label lblPasswordError = new Label("Password cannot be empty");
 	private Label lblEmailError = new Label("Email cannot be empty");
+	private Label lblUsrLimitExceedError = new Label("Maximum User Limit Reached");
 	private Label skillSet = new Label("Skill Set");
 	private TextBox textareaOthers = new TextBox();
 	private VerticalPanel p = new VerticalPanel();
@@ -75,10 +76,12 @@ public class UserInductionFormView extends FlexTable implements Display {
 		lblUserNameError.addStyleName("error");
 		lblEmailError.addStyleName("error");
 		lblPasswordError.addStyleName("error");
+		lblUsrLimitExceedError.addStyleName("error");
 
 		lblUserNameError.setVisible(false);
 		lblEmailError.setVisible(false);
 		lblPasswordError.setVisible(false);
+		lblUsrLimitExceedError.setVisible(false);
 		textareaOthers.setVisible(false);
 		setWidget(0, 1, lblHeading);
 		setWidget(1, 0, new Label("Name"));
@@ -117,6 +120,7 @@ public class UserInductionFormView extends FlexTable implements Display {
 		setWidget(12, 2, btnSubmit);
 		setWidget(12, 3, btnEdit);
 		setWidget(13, 1, p);
+		setWidget(14, 2, lblUsrLimitExceedError);
 
 		lblReportingTo.setVisible(false);
 		listReportingTo.setVisible(false);
@@ -139,6 +143,14 @@ public class UserInductionFormView extends FlexTable implements Display {
 
 			}
 		});
+	}
+
+	public Label getLblUsrLimitExceedError() {
+		return lblUsrLimitExceedError;
+	}
+
+	public void setLblUsrLimitExceedError(Label lblUsrLimitExceedError) {
+		this.lblUsrLimitExceedError = lblUsrLimitExceedError;
 	}
 
 	public TextBox getTxtName() {

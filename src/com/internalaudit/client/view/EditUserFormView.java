@@ -27,7 +27,8 @@ public class EditUserFormView extends FlexTable implements Display {
 	private DateBox dateAvailabalityTo = new DateBox();
 	private ListBox listSkillSet = new ListBox();
 	private ButtonRound btnCancel = new ButtonRound("Back");
-	private ButtonRound btnSubmit = new ButtonRound("Update");
+	private ButtonRound btnSubmit = new ButtonRound("Update User");
+	private ButtonRound btnDelete = new ButtonRound("Delete User");
 	// private TextBox txtEmail = new TextBox();
 	private ListBox listReportingTo = new ListBox();
 	private ListBox listEmployees = new ListBox();
@@ -97,6 +98,7 @@ public class EditUserFormView extends FlexTable implements Display {
 		setWidget(11, 2, listCompany);
 		setWidget(12, 1, btnCancel);
 		setWidget(12, 2, btnSubmit);
+		setWidget(12, 3, btnDelete);
 
 		lblReportingTo.setVisible(false);
 		listReportingTo.setVisible(false);
@@ -246,5 +248,14 @@ public class EditUserFormView extends FlexTable implements Display {
 	public void setListEmployees(ListBox listEmployees) {
 		this.listEmployees = listEmployees;
 	}
+	
+	public ButtonRound getBtnDelete() {
+		return btnDelete;
+	}
+
+	public void setBtnDelete(ButtonRound btnDelete) {
+		this.btnDelete = btnDelete;
+	}
+
 
 }
