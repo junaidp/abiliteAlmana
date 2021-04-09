@@ -14,6 +14,7 @@ public class EngagementDTO implements Serializable{
 	private ArrayList<SuggestedControls> selectedControls = new ArrayList<SuggestedControls>();
 	private ArrayList<AuditWork> selectedAuditWorkforPrograms = new ArrayList<AuditWork>();
 	private int statusControlRisk;
+	private boolean riskControlFeedback;
 	
 	public ArrayList<AuditWork> getSelectedAuditWorkforPrograms() {
 		return selectedAuditWorkforPrograms;
@@ -68,6 +69,12 @@ public class EngagementDTO implements Serializable{
 	}
 	public void setSelectedControls(ArrayList<SuggestedControls> selectedControls) {
 		this.selectedControls = selectedControls;
+	}
+	public boolean isRiskControlFeedback() {
+		return riskControlFeedback;
+	}
+	public void setRiskControlFeedback(boolean riskControlFeedback) {
+		this.riskControlFeedback = riskControlFeedback;
 	}
 	
 }

@@ -341,6 +341,7 @@ public class RisksView extends Composite {
 			// risk.setAuditEngageId(auditEngId);
 			AuditEngagement auditEng = new AuditEngagement();
 			auditEng.setAuditEngId(auditEngId);
+//			auditEng.setStatus(status);//added by moqeet
 			riskControlMatrix.setAuditEngageId(auditEng);
 			saveSuggestedControls(current, riskControlMatrix, status);
 
@@ -500,6 +501,9 @@ public class RisksView extends Composite {
 						visibilityApproveFeedbackButtons(true);
 						current.enableDataFields(true);
 					}
+					if(r.get(0).getStatus() == InternalAuditConstants.APPROVED) {
+						hideDeleteIcon(current);
+					}
 					current.getRiskId().setText(String.valueOf(r.get(i).getRiskId()));
 
 					current.getExistingControlView().getLblriskdata()
@@ -600,6 +604,10 @@ public class RisksView extends Composite {
 			RiskRow riskRow = (RiskRow) riskRows.getWidget(i);
 			riskRow.enableDataFields(false);;
 		}
+	}
+	
+	private void hideDeleteIcon(RiskRow riskRow) {
+		riskRow.getRemoveRow().setVisible(false);
 	}
 
 	private void deleteRisk(RiskControlMatrixEntity risk) {

@@ -663,7 +663,7 @@ public class KickoffView extends Composite {
 			final RiskObjective objectiveRisk = record.getEngagementDTO().getSelectedObjectiveRisks().get(j);
 			keyRiskView.setData(objectiveRisk);
 			if ((record.getEngagementDTO().getSelectedObjectiveRisks().get(j).getStatus() == InternalAuditConstants.SUBMIT)
-					&& record.getEngagementDTO().getStatusControlRisk() != InternalAuditConstants.REJECTED) {
+					&& !record.getEngagementDTO().isRiskControlFeedback()) {
 				keyRiskView.disable();
 				hpnlButton.setVisible(false);
 				btnAdd.setVisible(false);
@@ -938,9 +938,9 @@ public class KickoffView extends Composite {
 			hpnlButtons.setVisible(true);
 			activityObjectiveView.setData(record.getEngagementDTO().getSelectedActivityObjectives().get(j));
 			if(record.getEngagementDTO().getSelectedActivityObjectives() != null && (!record.getEngagementDTO().getSelectedActivityObjectives().isEmpty())) {	
-				boolean confirm = record.getEngagementDTO().getSelectedActivityObjectives().get(j).getStatus() == InternalAuditConstants.SUBMIT && 
-						record.getEngagementDTO().getStatusControlRisk() != InternalAuditConstants.REJECTED;
-				if (confirm) {
+//				boolean confirm = record.getEngagementDTO().getSelectedActivityObjectives().get(j).getStatus() == InternalAuditConstants.SUBMIT;
+				if (record.getEngagementDTO().getSelectedActivityObjectives().get(j).getStatus() == InternalAuditConstants.SUBMIT &&
+						!record.getEngagementDTO().isRiskControlFeedback()) {
 					activityObjectiveView.disable();
 					btnSaveActicityObjective.setVisible(false);
 					btnAddAcitivityObjective.setVisible(false);

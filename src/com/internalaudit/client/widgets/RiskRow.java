@@ -51,6 +51,8 @@ public class RiskRow extends Composite {
 		riskControlMatrixView.getListBoxInherintRating().setEnabled(flag);
 		riskControlMatrixView.getListBoxControlRating().setEnabled(flag);
 		riskControlMatrixView.getTxtAreaControl().setEnabled(flag);
+//		if(flag == false)
+//			removeRow.removeFromParent();
 	}
 
 	public Label getRiskId() {

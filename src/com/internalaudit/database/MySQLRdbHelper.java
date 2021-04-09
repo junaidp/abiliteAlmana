@@ -3586,7 +3586,7 @@ public class MySQLRdbHelper {
 				engagementDTO.setSelectedControls(
 						fetchControlsAgainstEngagementId(auditEngagement.getAuditEngId(), engagementDTO));
 //status set bby moqeet to enable objectives on rejection
-				engagementDTO.setStatusControlRisk(fetchControlRiskStatus(auditEngagement.getAuditEngId()));
+				fetchControlRiskStatus(auditEngagement.getAuditEngId(), engagementDTO );
 				// END
 
 				auditEngagement.setEngagementDTO(engagementDTO);
@@ -3621,7 +3621,7 @@ public class MySQLRdbHelper {
 		return record;
 	}
 
-	private int fetchControlRiskStatus(int auditEngId) {
+	private int fetchControlRiskStatus(int auditEngId, EngagementDTO engagementDTO) {
 		Session session = null;
 		int status = 0;
 		try {
@@ -3635,8 +3635,14 @@ public class MySQLRdbHelper {
 			for (Iterator it = rsList.iterator(); it.hasNext();) {
 				RiskControlMatrixEntity risk = (RiskControlMatrixEntity) it.next();
 				status = risk.getStatus();
+				if(risk.getFeedback()!= null && !(risk.getFeedback().isEmpty())) {
+					engagementDTO.setRiskControlFeedback(true);
+				}
+				else
+					engagementDTO.setRiskControlFeedback(false);
 				break;
 			}
+			engagementDTO.setStatusControlRisk(status);
 		logger.info(
 				String.format("(Inside fetchControlRiskStatus)  fetchControlRiskStatus Risks  for auditengid : " + auditEngId + new Date()));
 
@@ -9701,8 +9707,12 @@ public class MySQLRdbHelper {
 		} finally {
 			session.close();
 		}
-
-		return "Activity Objectives Saved";
+		String msg = null;
+		if(status == 3)
+			msg = "Saved";
+		if(status == 4)
+			msg = "Submitted";
+		return "Activity Objectives " + msg;
 	}
 
 	private int fetchExistingActivityJobRelation(int jobId, int acitivtyObjectiveId) {
@@ -9759,7 +9769,7 @@ public class MySQLRdbHelper {
 		try {
 			session = sessionFactory.openSession();
 			for (int i = 0; i < riskObjectives.size(); i++) {
-
+				riskObjectives.get(i).setStatus(status);//added by MOQEET
 				RiskJobRelation riskJobRelation = new RiskJobRelation();
 				riskJobRelation.setRiskObjective(riskObjectives.get(i));
 				JobCreation jobCreation = (JobCreation) session.get(JobCreation.class, jobId);
@@ -9778,7 +9788,7 @@ public class MySQLRdbHelper {
 				riskJobRelation.setDate(new Date());
 				session.saveOrUpdate(riskJobRelation);
 				session.flush();
-
+				
 				session.saveOrUpdate(riskObjectives.get(i));
 				session.flush();
 			}
