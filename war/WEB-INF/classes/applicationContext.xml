@@ -14,8 +14,6 @@ http://www.springframework.org/schema/beans/spring-beans-2.0.xsd"
 		<property name="url" value="jdbc:mysql://localhost/abilitealgh310321" />  
 		<property name="username" value="root" />
 		<property name="password" value="0502" />
-
-
 	</bean>
 	
 	

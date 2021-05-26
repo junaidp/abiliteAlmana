@@ -4099,6 +4099,9 @@ public class MySQLRdbHelper {
 
 		final String username = "hyphenconsult@gmail.com";
 		final String password = "ilzhkshpmtqduzuc";
+		
+//		final String username = "info@abilite.co";
+//		final String password = "Hyphen@2013!";
 
 		Properties props = new Properties();
 		props.put("mail.smtp.auth", "true");
