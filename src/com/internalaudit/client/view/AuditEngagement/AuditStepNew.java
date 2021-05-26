@@ -52,7 +52,7 @@ public class AuditStepNew extends Composite {
 	VerticalPanel exceptions;
 	int selectedJobId;
 	Employee loggedInEmployee;
-
+	private ArrayList<AddObservationUpload> listExceptionUploads; 
 	InternalAuditServiceAsync rpcService = GWT.create(InternalAuditService.class);
 
 	public AuditStepNew(int selectedJobId, Employee loggedInEmployee) {
@@ -61,6 +61,7 @@ public class AuditStepNew extends Composite {
 	}
 
 	private void layout() {
+		listExceptionUploads = new ArrayList<AddObservationUpload>();
 
 		addException.addClickHandler(new ClickHandler() {
 
@@ -70,6 +71,8 @@ public class AuditStepNew extends Composite {
 				final ExceptionRow row = new ExceptionRow();
 
 				exceptions.add(row);
+				
+				listExceptionUploads.add(row.getAddObservationUpload());
 
 				row.getRemoveRow().addClickHandler(new ClickHandler() {
 
@@ -79,6 +82,7 @@ public class AuditStepNew extends Composite {
 						for (int i = 0; i < exceptions.getWidgetCount(); i++) {
 							if (exceptions.getWidget(i) == row) {
 								exceptions.remove(i);
+								listExceptionUploads.remove(i);
 							}
 						}
 					}

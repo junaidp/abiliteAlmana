@@ -25,12 +25,14 @@ import com.internalaudit.client.view.AuditStepsRecommendationData;
 import com.internalaudit.client.view.DisplayAlert;
 import com.internalaudit.client.view.JobData;
 import com.internalaudit.client.view.PopupViewGXT;
+import com.internalaudit.client.view.AuditEngagement.AddObservationUpload;
 import com.internalaudit.client.view.Reporting.AllJobsView;
 import com.internalaudit.client.view.Reporting.JobExceptionsView;
 import com.internalaudit.client.view.Reporting.JobReportView;
 import com.internalaudit.client.view.Reporting.ResponsiblePersonRowHeadingView;
 import com.internalaudit.client.view.Reporting.ResponsiblePersonRowView;
 import com.internalaudit.client.view.Reporting.SelectedJobView;
+import com.internalaudit.client.widgets.ExceptionRow;
 import com.internalaudit.shared.Employee;
 import com.internalaudit.shared.Exceptions;
 import com.internalaudit.shared.InternalAuditConstants;
@@ -156,10 +158,11 @@ public class ReportingPresenter implements Presenter
 							// display.getVpnlReporting().clear();
 							ResponsiblePersonRowHeadingView responsiblePersonView = new ResponsiblePersonRowHeadingView();
 							// display.getVpnlReporting().add(responsiblePersonView);
-							display.getVpnlSelectedJob().add(responsiblePersonView);
+							display.getVpnlSelectedJob().add(responsiblePersonView);							
 
 							for (int i = 0; i < result.size(); i++) {
 								final ResponsiblePersonRowView responsiblePersonRowView = new ResponsiblePersonRowView();
+
 								responsiblePersonRowView.getException().setText(result.get(i).getDetail());
 								responsiblePersonRowView.getRecommendations()
 										.setText(result.get(i).getRecommendations());
@@ -195,6 +198,9 @@ public class ReportingPresenter implements Presenter
 									//showImplementationPanel(result, i, responsiblePersonRowView);
 								}
 								responsiblePersonView.getVpnlData().add(responsiblePersonRowView);
+								AddObservationUpload attachedFile = new AddObservationUpload(String.valueOf(result.get(i).getExceptionId()), "SamplingExceptionUploads");// employee
+								attachedFile.onlyViewAttachment();
+								responsiblePersonView.getVpnlData().add(attachedFile);
 								final JobData jobData = new JobData();
 								jobData.setSelectedId(i);
 								if (!(result.get(i).getManagementComments() == null)
@@ -225,7 +231,7 @@ public class ReportingPresenter implements Presenter
 
 									@Override
 									public void onClick(ClickEvent event) {
-										Boolean sendMail = false;
+										Boolean sendMail = true; //set true by Moqeet to sendEmail
 										if (result.get(jobData.getSelectedId()).getImplementaionComments() != null
 												&& !result.get(jobData.getSelectedId()).getImplementaionComments()
 														.equals("")
@@ -372,7 +378,6 @@ public class ReportingPresenter implements Presenter
 							lblHeading.addStyleName("heading");
 							display.getVpnlSelectedJob().add(lblHeading);
 							ResponsiblePersonRowHeadingView responsiblePersonView = new ResponsiblePersonRowHeadingView();
-
 							for (int i = 0; i < result.size(); i++) {
 								final ResponsiblePersonRowView responsiblePersonRowView = new ResponsiblePersonRowView();
 								// responsiblePersonRowView.getBtnSend().setVisible(true);
@@ -406,6 +411,11 @@ public class ReportingPresenter implements Presenter
 									responsiblePersonRowView.getStatus().addStyleName("blue");
 								}
 								responsiblePersonView.getVpnlData().add(responsiblePersonRowView);
+								
+								AddObservationUpload attachedFile = new AddObservationUpload(String.valueOf(result.get(i).getExceptionId()), "SamplingExceptionUploads");// employee
+								attachedFile.onlyViewAttachment();
+								responsiblePersonView.getVpnlData().add(attachedFile);
+								
 								final JobData jobData = new JobData();
 								jobData.setSelectedId(i);
 
@@ -627,7 +637,7 @@ public class ReportingPresenter implements Presenter
 
 			@Override
 			public void onValueChange(ValueChangeEvent<Date> event) {
-				Boolean sendMail = false;
+				Boolean sendMail = true; //set true by moqeet
 				boolean confirmed = Window
 						.confirm("New Implementation date will be Sent to Audit Department for Approval");
 				if (confirmed) {
@@ -956,6 +966,11 @@ public class ReportingPresenter implements Presenter
 
 					final JobExceptionsView jobExceptionsView = new JobExceptionsView();
 					selectedJobView.getSelectedJobContainer().add(jobExceptionsView);
+					
+					AddObservationUpload attachedFile = new AddObservationUpload(String.valueOf(exceptions.get(i).getExceptionId()), "SamplingExceptionUploads");// employee
+					attachedFile.onlyViewAttachment();
+					jobExceptionsView.getVpnlMain().add(attachedFile);
+					
 					jobExceptionsView.getException().setText(exceptions.get(i).getDetail());
 					jobExceptionsView.getDueDate().setValue(exceptions.get(i).getDueDate());
 					jobExceptionsView.getRecommendations().setText(exceptions.get(i).getRecommendations());

@@ -9,7 +9,7 @@ import com.sencha.gxt.core.client.dom.ScrollSupport.ScrollMode;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
 
 public class ResponsiblePersonRowHeadingView extends VerticalPanel {
-	private VerticalLayoutContainer vpnlData = new VerticalLayoutContainer();
+	private VerticalPanel vpnlData = new VerticalPanel();
 
 	public ResponsiblePersonRowHeadingView() {
 		createLayout();
@@ -84,8 +84,9 @@ public class ResponsiblePersonRowHeadingView extends VerticalPanel {
 		add(hpnlHeading);
 		scrollData.setHeight("420px");
 		vpnlData.setWidth("95%");
-		vpnlData.setHeight(500);
-		vpnlData.setScrollMode(ScrollMode.AUTOY);
+//		vpnlData.setHeight(500);
+//		vpnlData.setScrollMode(ScrollMode.AUTOY);
+		vpnlData.addStyleName("w3-border-bottom");
 		add(vpnlData);
 		// scrollData.add(vpnlData);
 		// for (int i = 0; i < hpnlHeading.getWidgetCount() - 1; i++) {
@@ -108,11 +109,11 @@ public class ResponsiblePersonRowHeadingView extends VerticalPanel {
 		auditJob.setVisible(false);
 	}
 
-	public VerticalLayoutContainer getVpnlData() {
+	public VerticalPanel getVpnlData() {
 		return vpnlData;
 	}
 
-	public void setVpnlData(VerticalLayoutContainer vpnlData) {
-		this.vpnlData = vpnlData;
-	}
+//	public void setVpnlData(VerticalLayoutContainer vpnlData) {
+//		this.vpnlData = vpnlData;
+//	}
 }

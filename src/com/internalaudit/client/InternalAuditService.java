@@ -153,7 +153,7 @@ public interface InternalAuditService extends RemoteService {
 
 	String sendException(Exceptions exception, Boolean sendMail, String selectedView) throws Exception;
 
-	void saveAuditStepAndExceptions(AuditStep step, ArrayList<Exceptions> exs) throws Exception;
+	ArrayList<Exceptions> saveAuditStepAndExceptions(AuditStep step, ArrayList<Exceptions> exs) throws Exception;
 
 	AuditStep getSavedAuditStep(int selectedJobId, int auditWorkId) throws Exception;
 

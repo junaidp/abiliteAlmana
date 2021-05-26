@@ -158,10 +158,10 @@ public class ResponsiblePersonRowView extends VerticalPanel {
 		recommendations.setEnabled(false);
 		managementComments.setEnabled(false);
 
-		exception.setHeight("300px");
-		recommendations.setHeight("300px");
-		managementComments.setHeight("300px");
-		implication.setHeight("300px");
+		exception.setHeight("200px");
+		recommendations.setHeight("200px");
+		managementComments.setHeight("200px");
+		implication.setHeight("200px");
 
 		exception.addStyleName("noresize");
 		recommendations.addStyleName("noresize");

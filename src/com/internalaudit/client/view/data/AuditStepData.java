@@ -1,5 +1,6 @@
 package com.internalaudit.client.view.data;
 
+import java.io.Console;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -15,11 +16,14 @@ import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteEvent;
 import com.google.gwt.user.client.ui.FormPanel.SubmitEvent;
 import com.google.gwt.user.client.ui.FormPanel.SubmitHandler;
+import com.google.gwt.user.client.ui.Image;
+import com.google.gwt.user.client.ui.InsertPanel.ForIsWidget;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.internalaudit.client.InternalAuditService;
 import com.internalaudit.client.InternalAuditServiceAsync;
 import com.internalaudit.client.view.DisplayAlert;
 import com.internalaudit.client.view.LoadingPopup;
+import com.internalaudit.client.view.AuditEngagement.AddObservationUpload;
 import com.internalaudit.client.view.AuditEngagement.AuditStepUploads;
 import com.internalaudit.client.view.AuditEngagement.AuditStepView;
 import com.internalaudit.client.view.AuditEngagement.SamplingAuditStep;
@@ -35,18 +39,18 @@ public class AuditStepData {
 
 	private InternalAuditServiceAsync rpcService = GWT.create(InternalAuditService.class);
 	private Logger logger = Logger.getLogger("AuditStepData");
+	private ArrayList<ExceptionRow> alreadySavedExceptions;
 
 	public AuditStepData() {
 
 	}
 
 	public void saveAuditStepAndException(AuditStep step, ArrayList<Exceptions> exs, final int status,
-
 			final AuditStepView auditStepView) {
 
 		final LoadingPopup loadingPopup = new LoadingPopup();
 		loadingPopup.display();
-		rpcService.saveAuditStepAndExceptions(step, exs, new AsyncCallback<Void>() {
+		rpcService.saveAuditStepAndExceptions(step, exs, new AsyncCallback<ArrayList<Exceptions>>() {
 
 			@Override
 			public void onFailure(Throwable caught) {
@@ -72,9 +76,18 @@ public class AuditStepData {
 			}
 
 			@Override
-			public void onSuccess(Void arg0) {
+			public void onSuccess(ArrayList<Exceptions> exceptions) {
 				loadingPopup.remove();
 				auditStepView.getFeedbackPanel().setVisible(false);
+				for(int i=0; i<exceptions.size(); i++) {
+//					if(alreadySavedExceptions != null && !alreadySavedExceptions.isEmpty()) {
+						if(auditStepView.getListExceptionUploads().get(i).getLblfilename() == null) {
+							auditStepView.getListExceptionUploads().get(i).saveUploadException(String.valueOf(exceptions.get(i).getExceptionId()));
+					}
+//					else {
+//					auditStepView.getListExceptionUploads().get(i).saveUploadException(String.valueOf(exceptions.get(i).getExceptionId()));
+//					}
+				}
 				if (status == 3) {
 					new DisplayAlert("Audit Step Saved");
 					auditStepView.fetchSavedAuditStep();
@@ -139,7 +152,7 @@ public class AuditStepData {
 				auditSamplingView.getTxtAreaAuditProcedure().setText(auditStep.getProceducePerformance());
 				if (auditStep.getAuditStepId() != 0) {
 					// auditStepView.disableFields(exceptions);
-					displayExceptions(exceptions, auditStep.getExceptions());
+					displayExceptions(exceptions, auditStep.getExceptions(), auditStepView);
 					// auditStepView.disableFields(exceptions,
 					// auditSamplingView);
 					//// CHECK WHO IS LOGGEDIN
@@ -151,8 +164,7 @@ public class AuditStepData {
 						auditStepView.getSave().setVisible(true);
 						auditStepView.getSubmit().setVisible(true);
 					}
-					//// end feedbacl
-
+					//// end feedback
 					// if(auditWorks.size()<1){//
 					// enableInitiationpanel();
 					// enableFields();
@@ -348,17 +360,33 @@ public class AuditStepData {
 	//
 	// }
 
-	private void displayExceptions(final VerticalPanel exceptions, ArrayList<Exceptions> arg0) {
+	private void displayExceptions(final VerticalPanel exceptions, ArrayList<Exceptions> arg0, final AuditStepView auditStepView) {
 		exceptions.clear();
+//		alreadySavedExceptions = arg0;
+//		alreadySavedExceptions = new ArrayList<ExceptionRow>();
+		auditStepView.getListExceptionUploads().clear();
+		auditStepView.getArrayListExceptions().clear();
+		for (final Exceptions exception : arg0) {
 
-		for (Exceptions e : arg0) {
-
-			final ExceptionRow row = new ExceptionRow(e.getExceptionId());// employee
-			row.getExId().setText(String.valueOf(e.getExceptionId()));
-			row.getException().setText(String.valueOf(e.getDetail()));
+			final ExceptionRow row = new ExceptionRow(exception.getExceptionId());// employee
+			row.getExId().setText(String.valueOf(exception.getExceptionId()));
+			row.getException().setText(String.valueOf(exception.getDetail()));
+			auditStepView.getArrayListExceptions().add(row);
+			try {
+				row.getAddObservationUpload().fetchProcedureAttachments(String.valueOf(exception.getExceptionId()), "SamplingExceptionUploads");
+				auditStepView.getListExceptionUploads().add(row.getAddObservationUpload());
+//				if(row.getAddObservationUpload().getLblfilename() == null ) {
+//					row.getAddObservationUpload().setAttachedFile(true);
+//				}
+//				alreadySavedExceptions.add(row);
+			}
+			catch (Exception ex) {
+//				Window.alert("Exception occuered in already atttached observation");
+				// TODO: handle exception
+			}
 			exceptions.add(row);
 			final DataSetter dataSetter = new DataSetter();
-			dataSetter.setId(e.getExceptionId());
+			dataSetter.setId(exception.getExceptionId());
 
 			// Remove Saved Row...
 			row.getRemoveRow().addClickHandler(new ClickHandler() {
@@ -367,9 +395,11 @@ public class AuditStepData {
 				public void onClick(ClickEvent event) {
 					if (Window.confirm("Are you sure you want to remove this Exception ?")) {
 						row.removeRow();
+//						alreadySavedExceptions.remove(row);
 						exceptions.remove(row);
 						deleteException(dataSetter.getId());
-
+						row.getAddObservationUpload().removeAttachedFile(String.valueOf(exception.getExceptionId()), "SamplingExceptionUploads", null);
+						removeException(auditStepView, row); 
 					}
 				}
 
@@ -393,5 +423,10 @@ public class AuditStepData {
 			}
 		});
 	}
+	
+	private void removeException(AuditStepView auditStepView, ExceptionRow row) {
+		auditStepView.getListExceptionUploads().remove(row.getAddObservationUpload());
+		auditStepView.getArrayListExceptions().remove(row);
+	} 
 
 }

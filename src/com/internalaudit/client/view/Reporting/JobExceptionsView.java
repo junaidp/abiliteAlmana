@@ -29,6 +29,8 @@ public class JobExceptionsView extends HorizontalPanel {
 	private Label status = new Label("");
 	private Anchor anchorFeedback = new Anchor("Feedback");
 	private TextField txtComments = new TextField();
+	private HorizontalPanel hpnlMain; 
+	private VerticalPanel vpnlMain;
 	// private AddImage addIcon = new AddImage();
 	// private Anchor anchorAddRecommendations = new Anchor("Add More Action
 	// Steps");
@@ -36,12 +38,15 @@ public class JobExceptionsView extends HorizontalPanel {
 
 	public JobExceptionsView() {
 		// setWidth("900px");
-		createLayout();
-		this.getElement().getStyle().setMarginTop(10, Unit.PX);
+		add(createLayout());
+//		this.getElement().getStyle().setMarginTop(10, Unit.PX);
+		vpnlMain.addStyleName("w3-border-bottom");
 	}
 
-	private void createLayout() {
-
+	private VerticalPanel createLayout() {
+		hpnlMain = new HorizontalPanel();
+		vpnlMain = new VerticalPanel();
+		
 		listBoxImplicationRating.addItem("Low", "0");
 		listBoxImplicationRating.addItem("Medium", "1");
 		listBoxImplicationRating.addItem("High", "2");
@@ -56,27 +61,27 @@ public class JobExceptionsView extends HorizontalPanel {
 		vpnlButtons.add(hpnlApprovalButtons);
 		txtComments.setEmptyText("Enter Comments");
 		vpnlButtons.setVisible(false);
-		add(txtAreaObservations);
+		hpnlMain.add(txtAreaObservations);
 		txtAreaObservations.getElement().setPropertyString("placeholder", "Enter text here");
 		txtAreaObservations.setWidth("150px");
 		txtAreaObservations.getElement().getStyle().setPaddingLeft(7, Unit.PX);
-		add(txtAreaImplication);
+		hpnlMain.add(txtAreaImplication);
 		txtAreaImplication.getElement().setPropertyString("placeholder", "Enter text here");
 		txtAreaImplication.setWidth("145px");
 		txtAreaImplication.getElement().getStyle().setPaddingLeft(7, Unit.PX);
-		add(listBoxImplicationRating);
+		hpnlMain.add(listBoxImplicationRating);
 		listBoxImplicationRating.setWidth("146px");
 
 		// add(divisionHead);
-		add(recommendations);
+		hpnlMain.add(recommendations);
 		dueDate.setFormat(new DefaultFormat(DateTimeFormat.getShortDateFormat()));
-		add(dueDate);
+		hpnlMain.add(dueDate);
 		dueDate.getElement().setPropertyString("placeholder", "yyyy-mm-dd");
 		dueDate.setWidth("100px");
 
 		recommendations.getElement().setPropertyString("placeholder", "Enter text here");
 		recommendations.setWidth("137px");
-		add(responsiblePerson);
+		hpnlMain.add(responsiblePerson);
 		responsiblePerson.setWidth("123px");
 		// responsiblePerson.setMultipleSelect(true);
 		status.setWidth("60px");
@@ -87,32 +92,34 @@ public class JobExceptionsView extends HorizontalPanel {
 		// hpnlAnchor.add(anchorViewActionSteps);
 		// anchorViewActionSteps.setVisible(false);
 		// add(hpnlAnchor);
-		add(btnSave);
+		hpnlMain.add(btnSave);
 		// anchor added by moqeet
-		add(anchorFeedback);
+		hpnlMain.add(anchorFeedback);
 		anchorFeedback.setVisible(false);
 		anchorFeedback.getElement().getStyle().setPaddingLeft(5, Unit.PX);
 		// if(status.getText().length()>1){
-		add(status);
+		hpnlMain.add(status);
 		// }
-		add(vpnlButtons);
+		hpnlMain.add(vpnlButtons);
 		// btnSave.setWidth("120px");
 		// for (int i = 0; i < getWidgetCount() - 1; i++) {
 		// getWidget(i).setWidth("150px");
 		// }
-		setSpacing(2);
+//		setSpacing(2);
 		// vpnlButtons.setWidth("100px");
 		status.setWidth("100px");
 		dueDate.setWidth("100px");
-		txtAreaImplication.setHeight("300px");
+		txtAreaImplication.setHeight("200px");
 		// listBoxImplicationRating.getElement().getStyle().setMarginLeft(10,
 		// Unit.PX);
 		listBoxImplicationRating.addStyleName("noresize");
-		txtAreaObservations.setHeight("300px");
-		recommendations.setHeight("300px");
+		txtAreaObservations.setHeight("200px");
+		recommendations.setHeight("200px");
 		txtAreaImplication.addStyleName("noresize ");
 		txtAreaObservations.addStyleName("noresize");
 		recommendations.addStyleName("noresize");
+		vpnlMain.add(hpnlMain);
+		return vpnlMain;
 	}
 
 	public Button getBtnSave() {
@@ -247,6 +254,12 @@ public class JobExceptionsView extends HorizontalPanel {
 	public void setAnchorFeedback(Anchor anchorFeedback) {
 		this.anchorFeedback = anchorFeedback;
 	}
+
+	public VerticalPanel getVpnlMain() {
+		return vpnlMain;
+	}
+
+
 
 	// public Anchor getAnchorAddRecommendations() {
 	// return anchorAddRecommendations;

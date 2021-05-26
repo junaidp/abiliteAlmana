@@ -4961,7 +4961,7 @@ public class MySQLRdbHelper {
 				long dueDateDiff = getDatesDiff(todaysDate, exceptions.get(i).getDueDate());
 				// hamza 2020 for sending email notification
 
-				if ((dueDateDiff == 7 || dueDateDiff == 1 || dueDateDiff == 0)
+				if ((dueDateDiff == 14 || dueDateDiff == 7 || dueDateDiff == 2 || dueDateDiff == 1 || dueDateDiff == 0)//email to be sent on 14th and 2nd day by moqeet
 						&& exceptions.get(i).getEmailSent() == 0) {
 
 					String date = exceptions.get(i).getDueDate().toLocaleString();
@@ -5082,7 +5082,7 @@ public class MySQLRdbHelper {
 			 * String message = "Dear " +
 			 * exception.getResponsiblePerson().getEmployeeName() +
 			 * " <br></br> <br></br>" +
-			 * " Your have received an Exception update from Abilite: <br></br> <br></br>"
+			 * " You have received an Exception update from Abilite: <br></br> <br></br>"
 			 * + "  please click on the link below.<br></br> <br></br>" +
 			 * " <a href= http://127.0.0.1:8888/InternalAudit.html#Reporting/employeeId="
 			 * + exception.getJobCreationId() + "/year=" + year + "/companyId="
@@ -5116,9 +5116,10 @@ public class MySQLRdbHelper {
 			// String dueDate = date.substring(0, 13);
 
 			String message = "Dear " + employeeAssignedDetail.getEmployeeName() + " <br></br> <br></br>"
-					+ " Your have received an Exception update from Abilite: <br></br> <br></br>"
+					+ " You have received an Exception update from Abilite: <br></br> <br></br>"
 					+ "You have been assigned " + exception.getDetail() + "  From  "
-					+ employeeAssigneeDetail.getEmployeeName() + " <br></br> <br></br>" + " Due on  " + dueDate;
+					+ employeeAssigneeDetail.getEmployeeName() + " <br></br> <br></br>" + " Due on  " + dueDate
+					+ " <br></br> <br></br> <br></br>" + "Please long in to <b>abilite</b> to respond to this Exception";
 			// sendEmail(message, "hamzariaz1994@gmail.com", "", "Abilite:
 			// Exception Received");
 			sendEmail(message, employeeAssignedDetail.getEmail(), "", "Abilite: Exception Received");
@@ -5129,7 +5130,7 @@ public class MySQLRdbHelper {
 			String implenDate = date.substring(0, 13);
 
 			String message = "Dear " + employeeAssigneeDetail.getEmployeeName() + " <br></br> <br></br>"
-					+ " Your have received an Exception update from Abilite: <br></br> <br></br>"
+					+ " You have received an Exception update from Abilite: <br></br> <br></br>"
 					+ "You have received Management Comments  :" + exception.getManagementComments() + "  From  "
 					+ employeeAssignedDetail.getEmployeeName() + " <br></br> <br></br>" + "Implementation on  "
 					+ implenDate;
@@ -5201,12 +5202,12 @@ public class MySQLRdbHelper {
 		return exceptions;
 	}
 
-	public void saveAuditStepAndExceptions(AuditStep auditstep, ArrayList<Exceptions> exceptions, int year,
+	public ArrayList<Exceptions> saveAuditStepAndExceptions(AuditStep auditstep, ArrayList<Exceptions> exceptions, int year,
 			int companyId) {
 
 		// save audit step
 
-		saveAuditStep(auditstep, exceptions, year, companyId);
+		return saveAuditStep(auditstep, exceptions, year, companyId);
 
 		// for ( Exceptions exception : exceptions)
 		// saveException(exception);
@@ -5254,7 +5255,7 @@ public class MySQLRdbHelper {
 			session.flush();
 
 			String message = "Dear " + responsiblePerson.getEmployeeName() + " <br></br> <br></br>"
-					+ " Your have received an Exception update from Abilite: <br></br> <br></br>"
+					+ " You have received an Exception update from Abilite: <br></br> <br></br>"
 					+ "  please click on the link below.<br></br> <br></br>"
 					+ " <a href= http://127.0.0.1:8888/InternalAudit.html#Reporting/employeeId="
 					+ exception.getJobCreationId() + "/year=" + year + "/companyId=" + companyId + "/employeeId="
@@ -5276,10 +5277,10 @@ public class MySQLRdbHelper {
 
 	}
 
-	private void saveAuditStep(AuditStep auditstep, ArrayList<Exceptions> exceptions, int year, int companyId) {
-
+	private ArrayList<Exceptions> saveAuditStep(AuditStep auditstep, ArrayList<Exceptions> exceptions, int year, int companyId) {
 		Session session = null;
 		Transaction tr = null;
+		ArrayList<Exceptions> listExceptions = null;
 		try {
 
 			session = sessionFactory.openSession();
@@ -5305,21 +5306,39 @@ public class MySQLRdbHelper {
 			// 2019 augu
 			session.saveOrUpdate(auditstep);
 			session.flush();
-			for (Exceptions exception : exceptions)
+			for(Exceptions exception : exceptions) {
 				saveException(exception, session, auditstep.getAuditStepId(), year, companyId);
+			}
 			tr.commit();
-
 			logger.info(String.format("(Inside saveAuditStep)   saving AuditStep for year: " + year + "for audit step"
 					+ auditstep.getApprovedBy() + "for company" + companyId + "" + new Date()));
-
+			listExceptions = getSavedExceptions(auditstep.getAuditStepId(), year, companyId);
 		} catch (Exception ex) {
 			logger.warn(String.format("Exception occured in saveAuditStep", ex.getMessage()), ex);
 			tr.rollback();
 		} finally {
 			session.close();
-
 		}
+		return listExceptions;
+	}
 
+	private ArrayList<Exceptions> fetchSavedExceptions(int jobID, Session session) {
+		ArrayList<Exceptions> listExceptions = null;
+		try {
+			Criteria crit = session.createCriteria(Exceptions.class);
+			crit.add(Restrictions.eq("jobCreationId.jobCreationId", jobID));
+			List rsList = crit.list();
+			for (Iterator it = rsList.iterator(); it.hasNext();) {
+				Exceptions exception = (Exceptions) it.next();
+				HibernateDetachUtility.nullOutUninitializedFields(exception,
+						HibernateDetachUtility.SerializationType.SERIALIZATION);
+				listExceptions.add(exception);
+			}
+		}
+		catch (Exception ex) {
+			logger.warn(String.format("Exception occured in fetchSavedExceptions", ex.getMessage()), ex);
+		}
+		return listExceptions;
 	}
 
 	private Employee fetchInitiatedBy(int auditStepId) {

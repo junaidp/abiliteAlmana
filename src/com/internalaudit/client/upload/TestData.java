@@ -41,7 +41,7 @@ public class TestData {
 
 	public void saveAuditStepAndException(AuditStep step, ArrayList<Exceptions> exs, final int status,
 			final AuditStepView auditStepView) {
-		rpcService.saveAuditStepAndExceptions(step, exs, new AsyncCallback<Void>() {
+		rpcService.saveAuditStepAndExceptions(step, exs, new AsyncCallback<ArrayList<Exceptions>>() {
 
 			@Override
 			public void onFailure(Throwable caught) {
@@ -67,8 +67,11 @@ public class TestData {
 			}
 
 			@Override
-			public void onSuccess(Void arg0) {
+			public void onSuccess(ArrayList<Exceptions> exceptions) {
 				auditStepView.getFeedbackPanel().setVisible(false);
+				for(int i=0; i<auditStepView.getArrayListExceptions().size(); i++) {
+					auditStepView.getListExceptionUploads().get(i).saveUploadException(String.valueOf(exceptions.get(i)));
+				}
 				if (status == 3) {
 					new DisplayAlert("Audit Step Saved");
 					auditStepView.fetchSavedAuditStep();

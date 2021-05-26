@@ -98,6 +98,8 @@ public class AuditStepView extends Composite {
 	private Button approve = new Button("Approve");
 	private Button reject = new Button("FeedBack");
 	// private Button addException = new Button("Add Observation");
+	private ArrayList<ExceptionRow> arrayListExceptions;
+	private ArrayList<AddObservationUpload> listExceptionUploads;
 
 	interface AuditViewUiBinder extends UiBinder<Widget, AuditStepView> {
 	}
@@ -109,6 +111,8 @@ public class AuditStepView extends Composite {
 		// addException.setWidth("110px");
 		this.auditWork = auditWork;
 		this.selectedJobId = selectedJobId;
+		listExceptionUploads = new ArrayList<AddObservationUpload>();
+		arrayListExceptions = new ArrayList<ExceptionRow>();
 		performance.addStyleName("messageTextarea");
 		// panelAddException.add(addException);
 		lblObservations.setVisible(false);
@@ -129,6 +133,8 @@ public class AuditStepView extends Composite {
 				lblObservations.setVisible(true);
 				final ExceptionRow row = new ExceptionRow();
 				exceptions.add(row);
+				arrayListExceptions.add(row);
+				listExceptionUploads.add(row.getAddObservationUpload());
 				save.setVisible(false);
 				// temporarily removed//
 				save.setVisible(true);
@@ -142,6 +148,8 @@ public class AuditStepView extends Composite {
 						for (int i = 0; i < exceptions.getWidgetCount(); i++) {
 							if (exceptions.getWidget(i) == row) {
 								exceptions.remove(i);
+								arrayListExceptions.remove(i);
+								listExceptionUploads.remove(i);
 							}
 						}
 						if (exceptions.getWidgetCount() == 0) {
@@ -218,15 +226,14 @@ public class AuditStepView extends Composite {
 
 		});
 	}
+		
 
 	private void saveAuditStep(final AuditWork auditWork, final int selectedJobId,
 			SamplingAuditStep auditStepSamplingView2, int status, String feedback) {
 		// disableFields(exceptions);
-
+		boolean flagfSave = true;
 		AuditStep step = new AuditStep();
-
 		ArrayList<Exceptions> exs = new ArrayList<Exceptions>();
-
 		step.setFeedback(feedback);
 		step.setFrequency(auditStepSamplingView2.getListBoxFrequency().getSelectedIndex());
 		step.setSamplingMethod(auditStepSamplingView2.getListBoxSamplingMethod().getSelectedIndex());
@@ -258,7 +265,12 @@ public class AuditStepView extends Composite {
 
 		for (int i = 0; i < exceptions.getWidgetCount(); i++) {
 			Exceptions exception = new Exceptions();
-			exception.setDetail(((ExceptionRow) exceptions.getWidget(i)).getException().getText());
+			String observationText = ((ExceptionRow) exceptions.getWidget(i)).getException().getText(); 
+			if(observationText.length() < 1) {
+				flagfSave = false;
+				break;
+			}
+			exception.setDetail(observationText);
 			// change
 			JobCreation jobCreation = new JobCreation();
 			jobCreation.setJobCreationId(selectedJobId);
@@ -268,8 +280,13 @@ public class AuditStepView extends Composite {
 			exception.setAuditStep(step.getAuditStepId());
 			exs.add(exception);
 		}
-
-		viewData.saveAuditStepAndException(step, exs, status, this);
+		if(flagfSave) {
+			viewData.saveAuditStepAndException(step, exs, status, this);
+		}
+		else
+		{
+			Window.alert("Please add some text in Observation"); 
+		}
 	}
 
 	public void fetchSavedAuditStep() {
@@ -418,7 +435,7 @@ public class AuditStepView extends Composite {
 		approvalButtonsPanel.setVisible(true);
 		initiationButtonsPanel.setVisible(false);
 		addException.setVisible(false);
-	}
+		}
 
 	public Label getSubmittedBy() {
 		return submittedBy;
@@ -474,6 +491,22 @@ public class AuditStepView extends Composite {
 
 	public void setSubmit(Button submit) {
 		this.submit = submit;
+	}
+
+	public ArrayList<ExceptionRow> getArrayListExceptions() {
+		return arrayListExceptions;
+	}
+
+	public void setArrayListExceptions(ArrayList<ExceptionRow> arrayListExceptions) {
+		this.arrayListExceptions = arrayListExceptions;
+	}
+
+	public ArrayList<AddObservationUpload> getListExceptionUploads() {
+		return listExceptionUploads;
+	}
+
+	public void setListExceptionUploads(ArrayList<AddObservationUpload> listExceptionUploads) {
+		this.listExceptionUploads = listExceptionUploads;
 	}
 
 }

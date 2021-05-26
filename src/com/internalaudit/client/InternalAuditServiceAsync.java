@@ -155,7 +155,8 @@ public interface InternalAuditServiceAsync {
 
 	void sendException(Exceptions exception, Boolean sendMail, String selectedView, AsyncCallback<String> asyncCallbac);
 
-	void saveAuditStepAndExceptions(AuditStep step, ArrayList<Exceptions> exs, AsyncCallback<Void> asyncCallback);
+	void saveAuditStepAndExceptions(AuditStep step, ArrayList<Exceptions> exs,
+			AsyncCallback<ArrayList<Exceptions>> asyncCallback);
 
 	void getSavedAuditStep(int selectedJobId, int auditWorkId, AsyncCallback<AuditStep> asyncCallback);
 

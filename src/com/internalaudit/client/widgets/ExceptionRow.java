@@ -10,6 +10,7 @@ import com.google.gwt.user.client.ui.TextArea;
 import com.internalaudit.client.InternalAuditService;
 import com.internalaudit.client.InternalAuditServiceAsync;
 import com.internalaudit.client.upload.AuditWorkProgramUpload;
+import com.internalaudit.client.view.AuditEngagement.AddObservationUpload;
 import com.internalaudit.client.view.AuditEngagement.AuditStepUploads;
 
 public class ExceptionRow extends Composite {
@@ -17,18 +18,18 @@ public class ExceptionRow extends Composite {
 	private Label exId;
 	HorizontalPanel panelFileDetail = new HorizontalPanel();
 	private TextArea exception;
-	// private FileUpload fileUploadException;
+//	 private FileUpload fileUploadException;
 	private HorizontalPanel hpnl;
 	private Image removeRow;
 	private int exceptionId;
-	AuditStepUploads auditStepUpload = null;
-	private AuditWorkProgramUpload upload;
+	String mainFolder = "SamplingExceptionUploads";
+	private AddObservationUpload addObservationUpload;
+//	AuditStepUploads auditStepUpload = null;
+//	private AuditWorkProgramUpload upload;
 
 	public ExceptionRow() {
 		hpnl = new HorizontalPanel();
-
 		initWidget(hpnl);
-
 		exId = new Label("0");
 		layout();
 
@@ -36,12 +37,11 @@ public class ExceptionRow extends Composite {
 
 	public ExceptionRow(int exceptionId) {
 		hpnl = new HorizontalPanel();
+		hpnl.setWidth("1150px");
 		this.exceptionId = exceptionId;
 		initWidget(hpnl);
-
 		exId = new Label(exceptionId + "");
 		layout();
-
 	}
 
 	private void layout() {
@@ -55,22 +55,23 @@ public class ExceptionRow extends Composite {
 		// exception.setWidth("1130px");
 		exception.addStyleName("w3-panel w3-border");
 		exception.getElement().getStyle().setMarginTop(5, Unit.PX);
-		exception.setSize("1100px", "60px");
+		exception.setSize("700px", "60px");
 
 		hpnl.add(exId);
 		hpnl.add(exception);
-
 		hpnl.add(removeRow);
 		// if (exceptionId != 0) {
 		// String mainFolder = "AuditExceptions";
-		// upload = new AuditWorkProgramUpload(exceptionId + "", mainFolder);
-		// // auditStepUpload = new AuditStepUploads(exId.getText());
-		// hpnl.add(upload);
+//		 upload = new AuditWorkProgramUpload(exceptionId + "", mainFolder);
+//		 auditStepUpload = new AuditStepUploads(exId.getText());
+		 addObservationUpload = new AddObservationUpload(exId.getText(), mainFolder);
+		 hpnl.add(addObservationUpload);
+//		 hpnl.add(upload);
 		// // hpnl.add(panelFileDetail);
 		// }
 
 		exId.setVisible(false);
-
+//		hpnl.add(removeRow);
 	}
 
 	public Label getExId() {
@@ -101,14 +102,15 @@ public class ExceptionRow extends Composite {
 		exception.removeFromParent();
 		exId.removeFromParent();
 		removeRow.removeFromParent();
-
+//		addObservationUpload.getDelete().setVisible(false);
 	}
 
 	public void disableFields() {
 		try {
 			exception.setEnabled(false);
 			removeRow.setVisible(false);
-			upload.getUploadPanel().setVisible(false);
+			addObservationUpload.getDelete().setVisible(false);
+			addObservationUpload.getUploadPanel().setVisible(false);
 		} catch (Exception ex) {
 			GWT.log("Error in disabling exception row " + ex);
 		}
@@ -116,12 +118,20 @@ public class ExceptionRow extends Composite {
 		// auditStepUpload.getBtnSubmit().setVisible(false);
 	}
 
-	public AuditStepUploads getAuditStepUpload() {
-		return auditStepUpload;
+	public AddObservationUpload getAddObservationUpload() {
+		return addObservationUpload;
 	}
 
-	public void setAuditStepUpload(AuditStepUploads auditStepUpload) {
-		this.auditStepUpload = auditStepUpload;
+	public void setAddObservationUpload(AddObservationUpload addObservationUpload) {
+		this.addObservationUpload = addObservationUpload;
 	}
+
+//	public AuditStepUploads getAuditStepUpload() {
+//		return auditStepUpload;
+//	}
+//
+//	public void setAuditStepUpload(AuditStepUploads auditStepUpload) {
+//		this.auditStepUpload = auditStepUpload;
+//	}
 
 }

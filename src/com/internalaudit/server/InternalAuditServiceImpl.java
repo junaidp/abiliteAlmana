@@ -758,16 +758,14 @@ public class InternalAuditServiceImpl extends RemoteServiceServlet implements In
 	}
 
 	@Override
-	public void saveAuditStepAndExceptions(AuditStep auditstep, ArrayList<Exceptions> exs) throws Exception {
+	public ArrayList<Exceptions> saveAuditStepAndExceptions(AuditStep auditstep, ArrayList<Exceptions> exs) throws Exception {
 		if (isLoggedIn()) {
 			session = getThreadLocalRequest().getSession(true);
 			int year = (Integer) session.getAttribute("year");
 			int companyId = (Integer) session.getAttribute("companyId");
-			rdbHelper.saveAuditStepAndExceptions(auditstep, exs, year, companyId);
+			return rdbHelper.saveAuditStepAndExceptions(auditstep, exs, year, companyId);
 		} else {
-
 			throw new TimeOutException(InternalAuditConstants.LOGGEDOUT);
-
 		}
 	}
 
